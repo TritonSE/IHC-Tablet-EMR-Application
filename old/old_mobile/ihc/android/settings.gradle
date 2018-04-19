@@ -1,0 +1,3 @@
+rootProject.name = 'ihc'
+
+include ':app'

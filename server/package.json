@@ -42,7 +42,7 @@
   },
   "jest": {
     "globals": {
-      "__TEST__" : true
+      "__TEST__": true
     }
   },
   "author": "",
