@@ -1,4 +1,5 @@
 # IHC EMR Overview
+Ayush Shukla
 
 Mobile: React Native, Jest tests (Sinon for stubbing), Realm database
 
