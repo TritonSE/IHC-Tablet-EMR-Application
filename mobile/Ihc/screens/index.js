@@ -11,6 +11,7 @@ import SoapScreen from './SoapScreen';
 import TriageScreen from './TriageScreen';
 import PatientHistoryScreen from './PatientHistoryScreen';
 import TestServerScreen from './TestServerScreen';
+import MedicationInventoryScreen from './MedicationInventoryScreen';
 
 // register all screens of the app (including internal ones)
 // store and Provider are pieces of Redux
@@ -27,4 +28,5 @@ export function registerScreens(store, Provider) {
   Navigation.registerComponent('Ihc.TriageScreen', () => TriageScreen, store, Provider);
   Navigation.registerComponent('Ihc.PatientHistoryScreen', () => PatientHistoryScreen, store, Provider);
   Navigation.registerComponent('Ihc.TestServerScreen', () => TestServerScreen);
+  Navigation.registerComponent('Ihc.MedicationInventoryScreen', () => MedicationInventoryScreen);
 }
