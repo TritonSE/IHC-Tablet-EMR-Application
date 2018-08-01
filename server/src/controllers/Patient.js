@@ -222,15 +222,22 @@ const PatientController = {
       });
   },
   GetTriage: function(req, res){
-    TriageModel.findOne({patientKey: req.params.key, date: req.params.date}, function(err, triage) {
-      if(!triage) {
-        err = new Error('Patient with key ' + req.params.key + ' doesn\'t exist or patient didn\'t come in on ' + req.params.date);
+    PatientModel.findOne({key: req.params.key}, function(err, patient) {
+      if(!patient) {
+        err = new Error('Patient with key ' + req.params.key + ' doesn\'t exist');
       }
-      if(err) {
-        res.json({status: false, error: err.message});
-        return;
+
+      // Go through each of patients triages and return the one with specified date
+      for(let triage in patient.triages) {
+        if(triage.date == req.params.date) {
+          res.json({status: true, triage: triage});
+          return;
+        }
       }
-      res.json({status: true, triage: triage});
+      err = new Error('Patient with key ' + req.params.key + ' does not have a triage for the date ' + req.params.date);
+      res.json({status: false, error: err.message});
+      return;
+      
     });
   },
   GetDrugUpdates: function(req, res){
