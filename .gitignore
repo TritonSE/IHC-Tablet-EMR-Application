@@ -7,3 +7,4 @@ server/build/
 *.DS_Store
 TODO
 *.idea
+mobile/Ihc/config.json

@@ -7,6 +7,7 @@ import {
   View
 } from 'react-native';
 import Button from './Button';
+import Medication from '../models/Medication';
 
 /*
  * Modal to update a status object's notes field
@@ -19,50 +20,40 @@ export default class UpdateMedicationModal extends Component<{}> {
    *    closeModal: function
    *    saveModal: function
    *    updateMedication: function
-   *    medicationProperties: array
+   *    medicationToEdit: Medication object
    *  }
    */
   constructor(props) {
     super(props);
-    this.medication = {
-      name: 'Medication',
-      properties: {
-        medicationKey: '',
-        drugName: '',
-        quantity: '0',
-        dosage: '0',
-        units: '',
-        comments: '' //Consider keeping track of multiple comments (array of strings)
-      }
-    };
   }
 
   updateName(drugName) {
-    this.medication.properties.drugName = drugName;
-    this.props.addMedication(this.medication);
+    this.props.medicationToEdit.drugName = drugName;
+    this.props.updateMedication(this.medication);
   }
 
   updateQuantity(quantity) {
-    this.medication.properties.quantity = quantity;
-    this.props.addMedication(this.medication);
+    this.props.medicationToEdit.quantity = parseInt(quantity,10);
+    this.props.updateMedication(this.medication);
   }
 
   updateDosage(dosage) {
-    this.medication.properties.dosage = dosage;
-    this.props.addMedication(this.medication);
+    this.props.medicationToEdit.dosage = parseInt(dosage, 10);
+    this.props.updateMedication(this.medication);
   }
 
   updateUnits(units) {
-    this.medication.properties.units = units;
-    this.props.addMedication(this.medication);
+    this.props.medicationToEdit.units = units;
+    this.props.updateMedication(this.medication);
   }
 
   updateComments(comments) {
-    this.medication.properties.comments = comments;
-    this.props.addMedication(this.medication);
+    this.props.medicationToEdit.comments = comments;
+    this.props.updateMedication(this.medication);
   }
 
   render() {
+
     return (
       <Modal
         animationType="fade"
@@ -71,37 +62,37 @@ export default class UpdateMedicationModal extends Component<{}> {
         onRequestClose={this.props.closeModal} >
         <View style={styles.modalContainer}>
           <View style={styles.modal}>
-            <Text style={styles.title}>Add Medication</Text>
+            <Text style={styles.title}>Update Medication</Text>
             <Text>Medication Name:</Text>
             <TextInput style={styles.notesInput}
               multiline={false}
               numberOfLines={1}
-              value={this.medication.properties.drugName}
-              onChangeText={this.updateName} />
+              value={this.props.medicationToEdit.drugName}
+              onChangeText={this.updateName}/>
             <Text>Quantity:</Text>
             <TextInput style={styles.notesInput}
               multiline={false}
               numberOfLines={1}
-              value={this.medication.properties.quantity}
-              onChangeText={this.updateQuantity} />
+              value={(String)(this.props.medicationToEdit.quantity)}
+              onChangeText={this.updateQuantity}/>
             <Text>Dosage</Text>
             <TextInput style={styles.notesInput}
               multiline={false}
               numberOfLines={1}
-              value={this.medication.properties.dosage}
-              onChangeText={this.updateDosage} />
+              value={(String)(this.props.medicationToEdit.dosage)}
+              onChangeText={this.updateDosage}/>
             <Text>Units:</Text>
             <TextInput style={styles.notesInput}
               multiline={false}
               numberOfLines={1}
-              value={this.medication.properties.units}
-              onChangeText={this.updateUnits} />
+              value={this.props.medicationToEdit.units}
+              onChangeText={this.updateUnits}/>
             <Text>Comments:</Text>
             <TextInput style={styles.notesInput}
               multiline={false}
               numberOfLines={1}
-              value={this.medication.properties.comments}
-              onChangeText={this.updateComments} />
+              value={this.props.medicationToEdit.comments}
+              onChangeText={this.updateComments}/>
             <View style={styles.modalFooter}>
               <Button style={styles.buttonContainer} onPress={this.props.closeModal}
                 text='Cancel' />

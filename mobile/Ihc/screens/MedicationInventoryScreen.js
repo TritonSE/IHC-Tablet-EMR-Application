@@ -7,9 +7,9 @@ import {
 } from 'react-native';
 import {localData, serverData} from '../services/DataService';
 import MedicationInventory  from '../components/MedicationInventory';
+import Medication from '../models/Medication';
 import Container from '../components/Container';
 import {stringDate} from '../util/Date';
-import Button from '../components/Button';
 import {downstreamSyncWithServer} from '../util/Sync';
 
 class MedicationInventoryScreen extends Component<{}> {
@@ -23,10 +23,6 @@ class MedicationInventoryScreen extends Component<{}> {
     this.state = {
       loading: false,
       showRetryButton: false,
-      updates: [],
-      errorMsg: null,
-      successMsg: null,
-      medicationCheckmarks: [],
       todayDate: stringDate(new Date()),
       upstreamSyncing: false, // Should be set before server calls to declare what kind of syncing
     };
@@ -35,17 +31,7 @@ class MedicationInventoryScreen extends Component<{}> {
   }
 
   // TODO
-  saveEditModal = (medicationKey, medicationProps) => {
-    let statusObj = {};
-
-    this.props.setLoading(true);
-    this.props.isUploading(true);
-    this.props.setCurrentPatientKey(patientKey);
-
-  }
-
-  // TODO
-  saveEditModal = (newMedication) => {
+  saveModal = (medication) => {
     let statusObj = {};
     this.props.setLoading(true);
     this.props.isUploading(true);
@@ -73,32 +59,19 @@ class MedicationInventoryScreen extends Component<{}> {
 
   render() {
 
-    // Test to see if anything shows up in the table
-    tempRows = [];
 
-    medication1 = {
-      name: 'Medication',
-      properties: {
-        medicationKey: 'hello', 
-        drugName: 'brent', 
-        quantity: 6, 
-        dosage: 2, 
-        units: 'kgs', 
-        comments: 'these are comments'
-      }
-    }
-    tempRows.push(medication1);
+    //TODO update rows
     return (
       <Container>
 
         <View style={styles.headerContainer}>
+          <Text style={styles.title}>Medication Inventory</Text>
         </View>
 
         <ScrollView contentContainerStyle={styles.tableContainer} horizontal>
           <MedicationInventory
-            rows={tempRows}
-            saveEditModal={this.saveEditModal}
-            saveNewModal={this.saveNewModal}
+            rows={[]}
+            saveModal={this.saveModal}
           />
         </ScrollView>
 
@@ -120,16 +93,6 @@ const styles = StyleSheet.create({
   tableContainer: {
     flex: 0,
   },
-  footerContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    height: 40,
-    margin: 4,
-  },
-  button: {
-    width: 120,
-    height: 60 
-  }
 });
 
 // Redux
