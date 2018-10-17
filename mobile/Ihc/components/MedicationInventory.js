@@ -39,8 +39,8 @@ export default class MedicationInventory extends Component<{}> {
 
   openEditModal = (medicationToEdit) => {
     this.setState({medicationToEdit: medicationToEdit, showModal: true});
-    });
   }
+
   openAddModal = () => {
     this.setState({showModal: true, 
       medicationToEdit: {
@@ -52,6 +52,7 @@ export default class MedicationInventory extends Component<{}> {
       }
     });
   }
+
   closeModal = () => {
     this.setState({showModal: false, 
       medicationToEdit: {
