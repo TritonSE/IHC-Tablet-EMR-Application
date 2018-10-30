@@ -76,7 +76,7 @@ class WelcomeScreen extends Component<{}> {
       })
       .catch(err => {
         if(this.props.loading) {
-          this.props.setLoading(true);
+          this.props.setLoading(false);
           this.props.setErrorMessage(err.message);
         }
       });
