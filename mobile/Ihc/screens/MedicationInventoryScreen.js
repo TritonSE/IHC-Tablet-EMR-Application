@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -8,6 +9,8 @@ import {
 import {localData, serverData} from '../services/DataService';
 import MedicationInventory  from '../components/MedicationInventory';
 import Container from '../components/Container';
+import Button from '../components/Button';
+import Medication from '../models/Medication';
 import {stringDate} from '../util/Date';
 import {downloadMedications} from '../util/Sync';
 
@@ -23,9 +26,11 @@ class MedicationInventoryScreen extends Component<{}> {
   constructor(props) {
     super(props);
     const todayDate = this.props.todayDate || stringDate(new Date());
+    const tempMedication = Medication.getInstance();
     this.state = {
       todayDate: todayDate,
-      rows: []
+      rows: [],
+      rowsTemp: [tempMedication]
     };
 
     this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
@@ -87,7 +92,7 @@ class MedicationInventoryScreen extends Component<{}> {
     // Load existing Medication info if it exists
     const medications = localData.getAllMedications();
     const medicationRows = this.convertMedicationsToRows(medications);
-    this.setState({ rows: medicationRows });
+    this.setState({ rows: medications });
 
     // Attempt server download and reload information if successful
     downloadMedications()
@@ -99,7 +104,7 @@ class MedicationInventoryScreen extends Component<{}> {
 
           const medications = localData.getAllMedications();
           const medicationRows = this.convertMedicationsToRows(medications);
-          this.setState({ rows: medicationRows });
+          this.setState({ rows: medications });
 
           this.props.setLoading(false);
         }
@@ -164,20 +169,66 @@ class MedicationInventoryScreen extends Component<{}> {
       })
       .catch( (err) => {
         if(this.props.loading) {
-          //TODO: localData.markMedicationNeedToUpload(key);
+          localData.markMedicationNeedToUpload(oldKey);
 
           this.props.setLoading(false, true);
           this.props.setErrorMessage(err.message);
         }
       });
   }
-  
+
+  upload = () => {
+    this.props.setLoading(true);
+    this.props.isUploading(true);
+    this.props.clearMessages();
+
+    const medications = localData.getMedicationsToUpload();
+    serverData.updateMedications(medications)
+      .then(() => {
+        if(this.props.loading) {
+          localData.markMedicationsUploaded();
+          this.props.setLoading(false);
+          this.props.setSuccessMessage(`Uploaded successfully: [medications]`);
+        }
+      })
+      .catch(err => {
+        if(this.props.loading) {
+          this.props.setLoading(false);
+          this.props.setErrorMessage(err.message);
+        }
+      });
+  }
+
+  download = () => {
+    this.props.setLoading(true);
+    this.props.isUploading(false);
+    this.props.clearMessages();
+
+    downloadMedications()
+      .then((failedMedicationKeys) => {
+        if(this.props.loading) {
+          if(failedMedicationKeys.length > 0) {
+            throw new Error(`${failedMedicationKeys.length} medications failed to download. Try again`);
+          }
+
+          this.props.setLoading(false);
+          this.props.setSuccessMessage(`Downloaded successfully: [medications]`);
+        }
+      })
+      .catch(err => {
+        if(this.props.loading) {
+          this.props.setLoading(false);
+          this.props.setErrorMessage(err.message);
+        }
+      });
+  }
+
   render() {
     //TODO update rows
     return (
       <Container>
 
-        <View style={styles.headerContainer}>
+        <View style={styles.header}>
           <Text style={styles.title}>Medication Inventory</Text>
         </View>
 
@@ -189,6 +240,16 @@ class MedicationInventoryScreen extends Component<{}> {
           />
         </ScrollView>
 
+        <View style={styles.footer}>
+          <Button onPress={this.upload}
+            text="upload"
+            style={styles.button}
+          />
+          <Button onPress={this.download}
+            text="download"
+            style={styles.button}
+          />
+        </View>
 
       </Container>
     );
@@ -196,9 +257,15 @@ class MedicationInventoryScreen extends Component<{}> {
 }
 
 const styles = StyleSheet.create({
-  headerContainer: {
+  header: {
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  footer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    bottom: 0,
   },
   title: {
     fontSize: 20,
@@ -207,6 +274,9 @@ const styles = StyleSheet.create({
   tableContainer: {
     width: '100%',
   },
+  button: {
+    width: 140,
+  }
 });
 
 // Redux

@@ -3,7 +3,7 @@ import {localData, serverData} from '../services/DataService';
 // Download updates from the server, save them locally, then resolve Promise
 // of all the patient keys that failed to download
 export function downstreamSyncWithServer() {
-  const lastSynced = localData.lastSynced();
+  const lastSynced = localData.patientsLastSynced();
 
   return serverData.getUpdatedPatients(lastSynced)
     .then((patients) => {
@@ -12,7 +12,7 @@ export function downstreamSyncWithServer() {
     });
 }
 export function downloadMedications() {
-  const lastSynced = localData.lastSynced();
+  const lastSynced = localData.medicationsLastSynced();
 
   return serverData.getUpdatedMedications(lastSynced)
     .then((medications) => {

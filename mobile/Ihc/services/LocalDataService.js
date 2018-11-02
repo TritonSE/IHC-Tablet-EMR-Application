@@ -220,10 +220,10 @@ export function getTriage(patientKey, strDate) {
 
 // Update/Create a medication
 export function updateMedication(oldKey, update) {
+  const timestamp = new Date().getTime();
   const medication = realm.objects('Medication')
     .filtered('key = "' + oldKey + '"')['0'];
 
-  const timestamp = new Date().getTime();
   update.lastUpdated = timestamp;
 
   realm.write( () => {
@@ -233,11 +233,11 @@ export function updateMedication(oldKey, update) {
       properties.forEach( p => {
         medication[p] = update[p];
       });
-      medication['key'] = Medication.makeKey(update);
+      medication.key = Medication.makeKey(update);
       return true;
     }
     //Medication does not exist (create)
-    update['key'] = Medication.makeKey(update);
+    update.key = Medication.makeKey(update);
     realm.create('Medication', update);
     return true;
   });
@@ -292,9 +292,35 @@ export function getPatientsToUpload(all = false) {
   return Object.values(realm.objects('Patient').filtered('needToUpload = true'));
 }
 
-export function lastSynced() {
+export function getMedicationsToUpload(all = false) {
+  if(all) {
+    return Object.values(realm.objects('Medication'));
+  }
+  return Object.values(realm.objects('Medication').filtered('needToUpload = true'));
+}
+
+export function patientsLastSynced() {
   let settings = realm.objects('Settings')['0'];
-  return settings ? settings.lastSynced : 0;
+  if (settings) {
+    if (settings.patientsLastSynced)
+      return settings.patientsLastSynced;
+    else
+      return 0;
+  } else {
+    return 0;
+  }
+}
+
+export function medicationsLastSynced() {
+  let settings = realm.objects('Settings')['0'];
+  if (settings) {
+    if (settings.medicationsLastSynced)
+      return settings.medicationsLastSynced;
+    else
+      return 0;
+  } else {
+    return 0;
+  }
 }
 
 // When updates or creates fail to propogate to the server-side, then mark the
@@ -310,6 +336,17 @@ export function markPatientNeedToUpload(patientKey) {
   });
 }
 
+export function markMedicationNeedToUpload(key) {
+  const medication = realm.objects('Medication').filtered(`key="${key}"`)[0];
+  if(!medication) {
+    throw new Error('Medication does not exist with key ' + key);
+  }
+
+  realm.write(() => {
+    medication.needToUpload = true;
+  });
+}
+
 // After uploading, then these patients don't have to be marked as needing to
 // upload
 export function markPatientsUploaded() {
@@ -321,6 +358,68 @@ export function markPatientsUploaded() {
   });
 }
 
+export function markMedicationsUploaded() {
+  const medications = Object.values(realm.objects('Medication').filtered('needToUpload = true'));
+  realm.write(() => {
+    medications.forEach(medication => {
+      medication.needToUpload = false;
+    });
+  });
+}
+
+export function handleDownloadedMedications(medications) {
+  const fails = new Set();
+
+  medications.forEach( incomingMedication => {
+    const existingMedication = realm.objects('Medication')
+      .filtered('key = "' + incomingMedication.key + '"')['0'];
+
+    // Medication received does not exist yet
+    if(!existingMedication) {
+      realm.write(() => {
+        realm.create('Medication', incomingMedication);
+      });
+    }
+    else {
+      if (incomingMedication.lastUpdated < existingMedication.lastUpdated) {
+        throw new Error('Received a medication that is out-of-date. Did you upload updates yet?');
+      }
+
+      // The case where MedicationInventoryScreen is refreshing
+      if (incomingMedication.lastUpdated == existingMedication.lastUpdated) {
+        return;
+      }
+
+      // Actually update the medication
+      if(!updateMedication(existingMedication.key, incomingMedication))
+        fails.add(existingMedication.key);
+
+      // Update that medication's updated timestamp
+      realm.write(() => {
+        // If medication finished updating successfully
+        if(!fails.has(incomingMedication.key)) {
+          existingMedication.lastUpdated = incomingMedication.lastUpdated;
+        }
+      });
+    }
+  });
+
+  if(fails.size) {
+    return Array.from(fails);
+  }
+
+  // If finished updating everything successfully, then update synced info
+  const settings = realm.objects('Settings')['0'];
+  realm.write(() => {
+    if(!settings) {
+      realm.create('Settings', {medicationsLastSynced: new Date().getTime(), patientsLastSynced: 0});
+      return;
+    }
+    settings.medicationsLastSynced = new Date().getTime();
+  });
+  return [];
+}
+
 // TODO UPDATE RETURN VAL maybe be object?
 /* {
     ignoredPatientKeys: [],
@@ -329,38 +428,6 @@ export function markPatientsUploaded() {
    }
  */
 
-export function handleDownloadedMedications(medications) {
-  const fails = new Set();
-
-  medications.forEach( incomingMedication => {
-    const existingMedication = realm.objects('Medication')
-      .filtered('key = "' + incomingMedication + '"')['0'];
-
-    // Medication received does not exist yet
-    if(!existingMedication) {
-      realm.write(() => {
-        realm.create('Medication', incomingMedication);
-      });
-      return;
-    }
-
-    if (incomingMedication.lastUpdated < existingMedication.lastUpdated) {
-      throw new Error('Received a medication that is out-of-date. Did you upload updates yet?');
-    }
-
-    // Actually update the medication
-    if(!updateMedication(incomingMedication))
-      fails.add(existingMedication.key);
-
-    // Update that medication's updated timestamp
-    realm.write(() => {
-      // If medication finished updating successfully
-      if(!fails.has(incomingMedication.key)) {
-        existingMedication.lastUpdated = incomingMedication.lastUpdated;
-      }
-    });
-  });
-}
 /**
  * Returns array of patientKeys that failed to download.
  * No key is added if incomingPatient is ignored because it is older
@@ -423,10 +490,10 @@ export function handleDownloadedPatients(patients) {
   const settings = realm.objects('Settings')['0'];
   realm.write(() => {
     if(!settings) {
-      realm.create('Settings', {lastSynced: new Date().getTime()});
+      realm.create('Settings', {patientsLastSynced: new Date().getTime(), medicationsLastSynced: 0});
       return;
     }
-    settings.lastSynced = new Date().getTime();
+    settings.patientsLastSynced = new Date().getTime();
   });
   return [];
 }
