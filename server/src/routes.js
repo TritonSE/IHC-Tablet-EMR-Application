@@ -1,6 +1,7 @@
 import express from 'express';
 
 import PatientController from './controllers/Patient';
+import MedicationController from './controllers/MedicationController';
 
 const router = express.Router();
 
@@ -57,18 +58,22 @@ router.get('/patients/statuses/:date', PatientController.GetStatuses);
 
 //returns an array of medications that have been updated since the lastUpdated
 //timestamp. If all medications are wanted, then pass a timestamp of 0
-router.get('/medications/:lastUpdated', PatientController.GetUpdatedMedications);
+router.get('/medications/:lastUpdated', MedicationController.GetUpdatedMedications);
+
+// receive medications from the tablet and save them to the server, or update the
+// existing server-side objects if they already exist
+router.put('/medications', MedicationController.UpdateMedications);
 
 //adds a new medication to the inventory
-router.post('/medication-inventory', PatientController.CreateMedication);
+router.post('/medication-inventory', MedicationController.CreateMedication);
 
 //return all the medications (varying expiration dates) for the given drug name
-router.get('/medication-inventory/:name', PatientController.GetMedications);
+router.get('/medication-inventory/:name', MedicationController.GetMedications);
 
 //updates the information for an existing medication
-router.put('/medication-inventory/:key/update', PatientController.UpdateMedication);
+router.put('/medication-inventory/:key/update', MedicationController.UpdateMedication);
 
 //deletes the information for an existing medication
-router.put('/medication-inventory/:key/delete', PatientController.DeleteMedication);
+router.put('/medication-inventory/:key/delete', MedicationController.DeleteMedication);
 
 module.exports = router;

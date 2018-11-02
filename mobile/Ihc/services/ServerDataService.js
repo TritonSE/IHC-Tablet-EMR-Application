@@ -2,7 +2,7 @@
 // Requires Promises because dealing with server requests
 
 import config from '../config.json';
-import {convertPatientForServer, convertStatusForServer} from '../util/Realm';
+import {convertPatientForServer, convertStatusForServer, convertMedicationsForServer} from '../util/Realm';
 // Must set the fetchUrl to the server's IP Address and Port
 const fetchUrl = config.fetchUrl;
 
@@ -222,6 +222,23 @@ export function updatePatients(patients) {
     },
     body: JSON.stringify({
       patients: patientsCopy
+    }),
+  }).then(() => {
+    return Promise.resolve(true);
+  }).catch(err => {
+    return Promise.reject(err);
+  });
+}
+
+export function updateMedications(medications) {
+  return fetch(fetchUrl + '/medications/', {
+    method: 'PUT',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      medications: medications
     }),
   }).then(() => {
     return Promise.resolve(true);

@@ -30,6 +30,7 @@ Medication.schema = {
     dosage: 'int',
     units: 'string',
     comments: 'string?', //Consider keeping track of multiple comments (array of strings)
-    lastUpdated: 'int'
+    lastUpdated: 'int',
+    needToUpload: 'bool?',
   }
 };

@@ -9,6 +9,7 @@ export default class Settings {
 Settings.schema = {
   name: 'Settings',
   properties: {
-    'lastSynced': 'int' // timestamp
+    'patientsLastSynced': 'int?', // timestamp
+    'medicationsLastSynced': 'int?' //timestamp
   }
 };
