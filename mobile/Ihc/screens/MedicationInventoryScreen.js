@@ -35,33 +35,6 @@ class MedicationInventoryScreen extends Component<{}> {
 
     this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
   }
-  /*MedicationInventoryForm = t.struct({
-    drugName: t.String, // drug name
-    quantity: t.int,
-    dosage: t.int,
-    units: t.String,
-    comments: t.maybe(t.String)
-  });
-
-  formOptions = {
-    fields: {
-      drugName: {
-        editable: true,
-      },
-      quantity: {
-        multiline: false,
-      },
-      dosage: {
-        multiline: false,
-      },
-      units: {
-        multiline: false,
-      },
-      comments: {
-        multiline: true,
-      },
-    }
-  }*/
 
   convertMedicationsToRows(medications) {
     const columnOrder = ['drugName', 'quantity', 'dosage', 'units', 'comments'];
@@ -126,7 +99,7 @@ class MedicationInventoryScreen extends Component<{}> {
     }
     this.props.setLoading(true);
     this.props.isUploading(true);
-
+    this.syncAndLoadMedications();
     serverData.createMedication(newMedication)
       .then( () => {
         if(this.props.loading) {
