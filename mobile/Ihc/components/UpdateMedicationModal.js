@@ -32,33 +32,19 @@ export default class UpdateMedicationModal extends Component<{}> {
     dosage: t.int,
     units: t.String,
     comments: t.maybe(t.String)
+  });*/
+
+  Units = t.enums({
+    kg: 'kg',
+    ml: 'ml',
+    g: 'g'
   });
 
-  formOptions = {
-    fields: {
-      drugName: {
-        editable: true,
-      },
-      quantity: {
-        multiline: false,
-      },
-      dosage: {
-        multiline: false,
-      },
-      units: {
-        multiline: false,
-      },
-      comments: {
-        multiline: true,
-      },
-    }
-  }*/
-  
   Medication = t.struct({
     drugName: t.String,
     quantity: t.Number,
     dosage: t.Number,
-    units: t.String,
+    units: this.Units,
     comments: t.maybe(t.String)
   });
 
@@ -105,18 +91,22 @@ export default class UpdateMedicationModal extends Component<{}> {
         onRequestClose={this.props.closeModal} >
         <View style={styles.modalContainer}>
           <View style={styles.modal}>
-            <Form ref="form"
-              type={this.Medication}
-              value={this.props.formValues}
-              options={this.formOptions}
-              onChange={this.onFormChange} />
-            <View style={styles.modalFooter}>
-              <Button text='Cancel'
-                style={styles.buttonContainer}
-                onPress={this.props.closeModal} />
-              <Button text='Save'
-                style={styles.buttonContainer}
-                onPress={this.submit} />
+            <View style={styles.form}>
+              <Form ref="form"
+                type={this.Medication}
+                value={this.props.formValues}
+                options={this.formOptions}
+                onChange={this.onFormChange} />
+
+              
+              <View style={styles.modalFooter}>
+                <Button text='Cancel'
+                  style={styles.buttonContainer}
+                  onPress={this.props.closeModal} />
+                <Button text='Save'
+                  style={styles.buttonContainer}
+                  onPress={this.submit} />
+              </View>
             </View>
           </View>
         </View>
@@ -151,5 +141,8 @@ export const styles = StyleSheet.create({
   buttonContainer: {
     width: 150,
     height: 40,
+  },
+  form: {
+    width: '80%',
   }
 });

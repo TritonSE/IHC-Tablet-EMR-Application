@@ -128,10 +128,6 @@ export default class MedicationInventory extends Component<{}> {
           formValues={this.state.formValues}
         />
 
-        
-
-        
-
         <Grid>
           {this.renderHeader(this.tableHeaders, (i) => `header${i}`)}
           {this.props.rows.map( row => this.renderRow(row, (i) => `row${i}`) )}
