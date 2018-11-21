@@ -251,6 +251,11 @@ export function getMedication(drugName, dosage, units) {
   return medication;
 }
 
+export function getMedicationWithKey(medicationKey) {
+  const medication = realm.objects('Medication').filtered('key = "' + medicationKey + '"');
+  return medication;
+}
+
 // Returns an array of all medications with the given name; undefined if none found
 export function getMedications(drugName) {
   const medications = Object.values(realm.objects('Medication').filtered('drugName = "' + drugName + '"'));

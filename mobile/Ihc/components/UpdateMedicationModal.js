@@ -19,14 +19,14 @@ export default class UpdateMedicationModal extends Component<{}> {
    *    showModal: boolean
    *    closeModal: function
    *    saveModal: function
+   *    formValues: formValues
    *  }
    */
   constructor(props) {
     super(props);
-    this.state = {formValues: {} };
   }
   
-  MedicationInventoryForm = t.struct({
+  /*MedicationInventoryForm = t.struct({
     drugName: t.String, // drug name
     quantity: t.int,
     dosage: t.int,
@@ -52,8 +52,8 @@ export default class UpdateMedicationModal extends Component<{}> {
         multiline: true,
       },
     }
-  }
-
+  }*/
+  
   Medication = t.struct({
     drugName: t.String,
     quantity: t.Number,
@@ -65,27 +65,25 @@ export default class UpdateMedicationModal extends Component<{}> {
   formOptions = {
     fields: {
       drugName: {
-        multiline: false,
+        multiline: false
       },
       quantity: {
-        multiline: false,
+        multiline: false
       },
       dosage: {
-        multiline: false,
+        multiline: false
       },
       units: {
-        multiline: false,
+        multiline: false
       },
       comments: {
-        multiline: true,
-      },
+        multiline: true
+      }
     }
   }
 
   onFormChange = (value) => {
-    this.setState({
-      formValues: value,
-    });
+    this.props.formValues = value;
   }
 
   submit = () => {
@@ -109,7 +107,7 @@ export default class UpdateMedicationModal extends Component<{}> {
           <View style={styles.modal}>
             <Form ref="form"
               type={this.Medication}
-              value={this.state.formValues}
+              value={this.props.formValues}
               options={this.formOptions}
               onChange={this.onFormChange} />
             <View style={styles.modalFooter}>

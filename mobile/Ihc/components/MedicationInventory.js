@@ -7,6 +7,7 @@ import {
 
 import { Col, Row, Grid } from 'react-native-easy-grid';
 import UpdateMedicationModal from './UpdateMedicationModal';
+import {localData, serverData} from '../services/DataService';
 import Button from './Button';
 
 export default class MedicationInventory extends Component<{}> {
@@ -22,20 +23,23 @@ export default class MedicationInventory extends Component<{}> {
     super(props);
     this.tableHeaders = ['Drug Name', 'Quantity', 'Dosage', 'Units', 'Notes'];
     this.rowNum = 0;
-    this.state = { showModal: false, oldKey: null};
+    this.state = { showModal: false, oldKey: null, 
+      formValues: {drugName: null, quantity: null, dosage: null, units: null, comments: null}};
   }
 
   openEditModal = (oldMedication) => {
     const oldKey = oldMedication.key;
-    this.setState({ showModal: true, oldKey: oldKey});
+    const formValues = this.getCurrentMedication(oldKey);
+    this.setState({ showModal: true, oldKey: oldKey, formValues: formValues});
   }
 
   openAddModal = () => {
-    this.setState({ showModal: true, oldKey: null });
+    this.setState({ showModal: true, oldKey: null, 
+      formValues: {drugName: null, quantity: null, dosage: null, units: null, comments: null}});
   }
 
   closeModal = () => {
-    this.setState({ showModal: false });
+    this.setState({ showModal: false});
   }
   saveModal = (newMedication) => {
     if (this.state.oldKey == null) {
@@ -43,6 +47,18 @@ export default class MedicationInventory extends Component<{}> {
     } else {
       this.props.updateMedication(this.state.oldKey, newMedication);
     }
+  }
+
+  getCurrentMedication(oldKey) {
+    let medication = localData.getMedicationWithKey(oldKey);
+
+    // medication[0] since getMedicationWithKey gives
+    let drugName = medication[0].drugName;
+    let quantity = medication[0].quantity;
+    let dosage = medication[0].dosage;
+    let units = medication[0].units;
+    let comments = medication[0].comments;
+    return {drugName: drugName, quantity: quantity, dosage: dosage, units: units, comments: comments};
   }
 
   // Renders each column in a row
@@ -100,18 +116,21 @@ export default class MedicationInventory extends Component<{}> {
     // Render row for header, then render all the rows
     return (
       <View style={styles.container}>
+      
+        <Button style={styles.buttonContainer}
+          onPress={this.openAddModal}
+          text='Add Medication' />
 
         <UpdateMedicationModal
           showModal={this.state.showModal}
           closeModal={this.closeModal}
           saveModal={this.saveModal}
+          formValues={this.state.formValues}
         />
 
-        <Button style={styles.buttonContainer}
-          onPress={this.openAddModal}
-          text='Add Medication' />
+        
 
-        <Text style={styles.title}>Medication Inventory{"\n"}</Text>
+        
 
         <Grid>
           {this.renderHeader(this.tableHeaders, (i) => `header${i}`)}
@@ -155,10 +174,8 @@ export const styles = StyleSheet.create({
     width: 130,
   },
   buttonContainer: {
-    position: 'relative', 
-    top: 38, 
-    left: 550, 
-    width: 200,
-    height: 30,
+    width:'50%',
+    alignSelf: 'center',
+    marginBottom: 10
   },
 });

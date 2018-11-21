@@ -35,7 +35,7 @@ class MedicationInventoryScreen extends Component<{}> {
 
     this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
   }
-  MedicationInventoryForm = t.struct({
+  /*MedicationInventoryForm = t.struct({
     drugName: t.String, // drug name
     quantity: t.int,
     dosage: t.int,
@@ -61,7 +61,7 @@ class MedicationInventoryScreen extends Component<{}> {
         multiline: true,
       },
     }
-  }
+  }*/
 
   convertMedicationsToRows(medications) {
     const columnOrder = ['drugName', 'quantity', 'dosage', 'units', 'comments'];
