@@ -8,8 +8,7 @@ const MedicationSchema = Schema({
   dosage: Number,
   units: String,
   comments: String,
-  lastUpdated: Number,
-  needToUpload: Boolean
+  lastUpdated: Number
 });
 
 const MedicationModel = mongoose.model('Medication', MedicationSchema);

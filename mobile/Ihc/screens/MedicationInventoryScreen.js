@@ -6,6 +6,7 @@ import {
   Text,
   View
 } from 'react-native';
+
 import {localData, serverData} from '../services/DataService';
 import MedicationInventory  from '../components/MedicationInventory';
 import Container from '../components/Container';
@@ -36,17 +37,6 @@ class MedicationInventoryScreen extends Component<{}> {
     this.props.navigator.setOnNavigatorEvent(this.onNavigatorEvent.bind(this));
   }
 
-  convertMedicationsToRows(medications) {
-    const columnOrder = ['drugName', 'quantity', 'dosage', 'units', 'comments'];
-
-    // TODO: sort medications alphabetically and by category
-    // Sort medications by quantity for now
-    medications.sort( (medication1, medication2) => medication1.quantity - medication2.quantity );
-
-    const toReturn = medications.map((obj) => columnOrder.map( (key) => obj[key] ));
-    return toReturn;
-  }
-
   // Reload table after new medication updates
   // Replaces componentDidMount() because this will be called around the same
   // time
@@ -64,7 +54,6 @@ class MedicationInventoryScreen extends Component<{}> {
 
     // Load existing Medication info if it exists
     const medications = localData.getAllMedications();
-    const medicationRows = this.convertMedicationsToRows(medications);
     this.setState({ rows: medications });
 
     // Attempt server download and reload information if successful
@@ -76,10 +65,10 @@ class MedicationInventoryScreen extends Component<{}> {
           }
 
           const medications = localData.getAllMedications();
-          const medicationRows = this.convertMedicationsToRows(medications);
           this.setState({ rows: medications });
 
           this.props.setLoading(false);
+          this.props.setSuccessMessage('Synced successfully');
         }
       })
       .catch( (err) => {
@@ -92,14 +81,14 @@ class MedicationInventoryScreen extends Component<{}> {
 
   createMedication = (newMedication) => {
     try {
-      localData.updateMedication(null, newMedication);
+      localData.createMedication(newMedication);
     } catch(e) {
       this.props.setErrorMessage(e.message);
       return;
     }
     this.props.setLoading(true);
     this.props.isUploading(true);
-    this.syncAndLoadMedications();
+
     serverData.createMedication(newMedication)
       .then( () => {
         if(this.props.loading) {
@@ -112,7 +101,7 @@ class MedicationInventoryScreen extends Component<{}> {
       })
       .catch( (err) => {
         if(this.props.loading) {
-          //TODO: localData.markMedicationNeedToUpload(key);
+          //localData.markMedicationNeedToUpload(key);
 
           this.props.setLoading(false, true);
           this.props.setErrorMessage(err.message);
@@ -120,9 +109,9 @@ class MedicationInventoryScreen extends Component<{}> {
       });
   }
 
-  updateMedication = (oldKey, newMedication) => {
+  updateMedication = (key, newMedication) => {
     try {
-      localData.updateMedication(oldKey, newMedication);
+      localData.updateMedication(key, newMedication);
     } catch(e) {
       this.props.setErrorMessage(e.message);
       return;
@@ -130,19 +119,18 @@ class MedicationInventoryScreen extends Component<{}> {
     this.props.setLoading(true);
     this.props.isUploading(true);
 
-    serverData.updateMedication(oldKey, newMedication)
+    serverData.updateMedication(key, newMedication)
       .then( () => {
         if(this.props.loading) {
           // if successful, then reload screen (which closes modal too)
           this.syncAndLoadMedications();
-
           this.props.setLoading(false);
           this.props.setSuccessMessage('Saved successfully');
         }
       })
       .catch( (err) => {
         if(this.props.loading) {
-          localData.markMedicationNeedToUpload(oldKey);
+          localData.markMedicationNeedToUpload(key);
 
           this.props.setLoading(false, true);
           this.props.setErrorMessage(err.message);
@@ -150,7 +138,7 @@ class MedicationInventoryScreen extends Component<{}> {
       });
   }
 
-  upload = () => {
+  sync = () => {
     this.props.setLoading(true);
     this.props.isUploading(true);
     this.props.clearMessages();
@@ -160,32 +148,7 @@ class MedicationInventoryScreen extends Component<{}> {
       .then(() => {
         if(this.props.loading) {
           localData.markMedicationsUploaded();
-          this.props.setLoading(false);
-          this.props.setSuccessMessage(`Uploaded successfully: [medications]`);
-        }
-      })
-      .catch(err => {
-        if(this.props.loading) {
-          this.props.setLoading(false);
-          this.props.setErrorMessage(err.message);
-        }
-      });
-  }
-
-  download = () => {
-    this.props.setLoading(true);
-    this.props.isUploading(false);
-    this.props.clearMessages();
-
-    downloadMedications()
-      .then((failedMedicationKeys) => {
-        if(this.props.loading) {
-          if(failedMedicationKeys.length > 0) {
-            throw new Error(`${failedMedicationKeys.length} medications failed to download. Try again`);
-          }
-
-          this.props.setLoading(false);
-          this.props.setSuccessMessage(`Downloaded successfully: [medications]`);
+          this.syncAndLoadMedications();
         }
       })
       .catch(err => {
@@ -214,12 +177,8 @@ class MedicationInventoryScreen extends Component<{}> {
         </ScrollView>
 
         <View style={styles.footer}>
-          <Button onPress={this.upload}
-            text="upload"
-            style={styles.button}
-          />
-          <Button onPress={this.download}
-            text="download"
+          <Button onPress={this.sync}
+            text="sync"
             style={styles.button}
           />
         </View>
@@ -258,6 +217,7 @@ import { connect } from 'react-redux';
 
 const mapStateToProps = state => ({
   loading: state.loading,
+  messages: state.messages,
 });
 
 const mapDispatchToProps = dispatch => ({

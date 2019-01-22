@@ -6,6 +6,7 @@ import Patient from '../models/Patient';
 import Soap from '../models/Soap';
 import DrugUpdate from '../models/DrugUpdate';
 import Status from '../models/Status';
+import Medication from '../models/Medication';
 
 jest.mock('realm');
 
@@ -84,11 +85,82 @@ describe('Signin patient', () => {
   });
 });
 
+describe('Create medication', () => {
+  beforeEach(() => {
+    Realm.mockClear();
+    mockObjects.mockClear();
+    mockCreate.mockClear();
+  });
+
+  it('successfully creates a medication that didnt exist before', () => {
+    mockObjects.mockImplementation(() => {
+      return { filtered: () => { return {} } };
+    });
+
+    const now = new Date().getTime();
+    sinon.useFakeTimers(now);
+
+    const expectedMedication = Medication.getInstance();
+    expectedMedication.lastUpdated = now;
+
+    const medication = Medication.getInstance();
+    localData.createMedication(medication);
+    expect(mockCreate).toHaveBeenCalledWith('Medication', expectedMedication);
+  });
+
+  it('doesnt create a medication that did exist before', () => {
+    mockObjects.mockImplementation(() => {
+      return { filtered: () => { return { 0: Medication.getInstance() } }};
+    });
+    const now = new Date().getTime();
+    sinon.useFakeTimers(now);
+
+    const medication = Medication.getInstance();
+
+    try{
+      localData.createMedication(medication);
+      throw new Error("Should have thrown an error");
+    }
+    catch(err) {
+      expect(mockCreate).not.toHaveBeenCalled();
+    }
+  });
+});
+
 describe('Download updates', () => {
   beforeEach(() => {
     Realm.mockClear();
     mockObjects.mockClear();
     mockCreate.mockClear();
+  });
+
+  it('handles 0 medications when no prior settings exist', () => {
+    mockObjects.mockImplementation(() => {
+      // Return any object because no settings exist
+      return {};
+    });
+
+    const now = new Date().getTime();
+    sinon.useFakeTimers(now);
+
+    const fails = localData.handleDownloadedMedications([]);
+    expect(mockCreate).toHaveBeenCalledWith('Settings', {patientsLastSynced: 0, medicationsLastSynced: now});
+    expect(fails).toEqual([]);
+  });
+
+  it('handles 0 medications when a prior settings exists', () => {
+    // Just need to return a Settings object with any value
+    const settings = { medicationsLastSynced: 100 };
+    mockObjects.mockImplementation(() => {
+      return { '0': settings};
+    });
+
+    const now = new Date().getTime();
+    sinon.useFakeTimers(now);
+
+    const fails = localData.handleDownloadedMedications([]);
+    expect(mockCreate).not.toHaveBeenCalledWith('Settings', {patientsLastSynced: 0, medicationsLastSynced: now});
+    expect(fails).toEqual([]);
   });
 
   it('handles 0 patients when no prior settings exist', () => {
@@ -101,14 +173,13 @@ describe('Download updates', () => {
     sinon.useFakeTimers(now);
 
     const fails = localData.handleDownloadedPatients([]);
-    expect(mockCreate).toHaveBeenCalledWith('Settings', {lastSynced: now});
+    expect(mockCreate).toHaveBeenCalledWith('Settings', {patientsLastSynced: now, medicationsLastSynced: 0});
     expect(fails).toEqual([]);
   });
 
   it('handles 0 patients when a prior settings exists', () => {
-
     // Just need to return a Settings object with any value
-    const settings = { lastSynced: 100 };
+    const settings = { patientsLastSynced: 100 };
     mockObjects.mockImplementation(() => {
       return { '0': settings };
     });
@@ -117,8 +188,8 @@ describe('Download updates', () => {
     sinon.useFakeTimers(now);
 
     const fails = localData.handleDownloadedPatients([]);
-    expect(mockCreate).not.toHaveBeenCalledWith('Settings', {lastSynced: now});
-    expect(settings.lastSynced).toEqual(now);
+    expect(mockCreate).not.toHaveBeenCalledWith('Settings', {patientsLastSynced: now, medicationsLastSynced: 0});
+    expect(settings.patientsLastSynced).toEqual(now);
     expect(fails).toEqual([]);
   });
 
@@ -131,7 +202,7 @@ describe('Download updates', () => {
     incomingPatient.soaps = [soap];
 
 
-    const settings = { lastSynced: 100 };
+    const settings = { patientsLastSynced: 100 };
     mockObjects.mockImplementation((type) => {
       if(type === 'Settings')
         return { '0': settings };
@@ -147,8 +218,8 @@ describe('Download updates', () => {
 
     const fails = localData.handleDownloadedPatients([incomingPatient]);
     expect(mockWrite).toHaveBeenCalled();
-    expect(mockCreate).not.toHaveBeenCalledWith('Settings', {lastSynced: now});
-    expect(settings.lastSynced).toEqual(now);
+    expect(mockCreate).not.toHaveBeenCalledWith('Settings', {patientsLastSynced: now, medicationsLastSynced: 0});
+    expect(settings.patientsLastSynced).toEqual(now);
     expect(existingPatient).toEqual(incomingPatient);
     expect(fails).toEqual([]);
   });
@@ -183,7 +254,7 @@ describe('Download updates', () => {
 
     const fails = localData.handleDownloadedPatients([incomingPatient]);
     expect(mockWrite).toHaveBeenCalled();
-    expect(mockCreate).toHaveBeenCalledWith('Settings', {lastSynced: now});
+    expect(mockCreate).toHaveBeenCalledWith('Settings', {patientsLastSynced: now, medicationsLastSynced: 0});
     expect(existingPatient).toEqual(incomingPatient);
     expect(fails).toEqual([]);
   });
@@ -222,7 +293,7 @@ describe('Download updates', () => {
     expect(fails).toEqual([incomingPatient.key]);
     // If didn't successfully update everything, then shouldn't update
     // lastSynced
-    expect(mockCreate).not.toHaveBeenCalledWith('Settings', {lastSynced: now});
+    expect(mockCreate).not.toHaveBeenCalledWith('Settings', {patientsLastSynced: now, medicationsLastSynced: 0});
   });
 
   it('should not update 1 older patient with outdated SOAP when no prior settings exists', () => {
@@ -308,7 +379,7 @@ describe('Download updates', () => {
       Object.assign({}, existingPatients[4])
     ];
 
-    const settings = { lastSynced: 100 };
+    const settings = { patientsLastSynced: 100 };
     let counter = 0; // number of types realm.objects('Patient') has been called
     mockObjects.mockImplementation((type) => {
       if(type === 'Settings')
@@ -325,9 +396,9 @@ describe('Download updates', () => {
     const fails = localData.handleDownloadedPatients(incomingPatients);
     expect(fails).toEqual(['key&500', 'key&600']);
     expect(mockWrite).toHaveBeenCalled();
-    expect(mockCreate).not.toHaveBeenCalledWith('Settings', {lastSynced: now});
+    expect(mockCreate).not.toHaveBeenCalledWith('Settings', {patientsLastSynced: now, medicationsLastSynced: 0});
     expect(existingPatients).toEqual(expectedPatients);
     // lastSynced should not update because there are fails
-    expect(settings.lastSynced).toEqual(100);
+    expect(settings.patientsLastSynced).toEqual(100);
   });
 });

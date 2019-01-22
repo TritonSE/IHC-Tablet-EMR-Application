@@ -67,7 +67,7 @@ router.put('/medications', MedicationController.UpdateMedications);
 //adds a new medication to the inventory
 router.post('/medication-inventory', MedicationController.CreateMedication);
 
-//return all the medications (varying expiration dates) for the given drug name
+//return all the medications for the given drug name
 router.get('/medication-inventory/:name', MedicationController.GetMedications);
 
 //updates the information for an existing medication
