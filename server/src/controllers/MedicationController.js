@@ -57,7 +57,9 @@ const MedicationController = {
       }
 
       for (let p in req.body.medication) {
-        drug[p] = req.body.medication[p];
+        if (p !== 'drugName' && p !== 'dosage' && p !== 'units' && p !== 'key') {
+          drug[p] = req.body.medication[p];
+        }
       }
 
       //saves it, callback function to handle error

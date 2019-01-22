@@ -300,8 +300,8 @@ export function getMedications(name) {
 
 // Server endpoint: put /medication-inventory/:name/update/:date
 // NOTE: separate update and create medication functions in order to check for pre-existing(create) and non-existing(update)
-export function updateMedication(oldKey, update) {
-  return fetch(fetchUrl + '/medication-inventory/' + oldKey + '/update', {
+export function updateMedication(key, update) {
+  return fetch(fetchUrl + '/medication-inventory/' + key + '/update', {
     method: 'PUT',
     headers: {
       Accept: 'application/json',
@@ -339,6 +339,7 @@ export function deleteMedication(key) {
       return Promise.reject(err);
     });
 }
+
 // Server endpoint: get /medications/:timestamp
 export function getUpdatedMedications(lastSynced) {
   return fetch(fetchUrl + '/medications/' + lastSynced)

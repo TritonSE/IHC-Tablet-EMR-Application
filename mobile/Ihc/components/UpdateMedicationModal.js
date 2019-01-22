@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 let t = require('tcomb-form-native');
 let Form = t.form.Form;
+
 import Button from './Button';
 import Medication from '../models/Medication';
 
@@ -19,7 +20,6 @@ export default class UpdateMedicationModal extends Component<{}> {
    *    showModal: boolean
    *    closeModal: function
    *    saveModal: function
-   *    formValues: formValues
    *  }
    */
   constructor(props) {
@@ -36,8 +36,9 @@ export default class UpdateMedicationModal extends Component<{}> {
 
   Units = t.enums({
     kg: 'kg',
-    ml: 'ml',
-    g: 'g'
+    g: 'g',
+    mg: 'mg',
+    ml: 'ml'
   });
 
   Medication = t.struct({
@@ -48,28 +49,8 @@ export default class UpdateMedicationModal extends Component<{}> {
     comments: t.maybe(t.String)
   });
 
-  formOptions = {
-    fields: {
-      drugName: {
-        multiline: false
-      },
-      quantity: {
-        multiline: false
-      },
-      dosage: {
-        multiline: false
-      },
-      units: {
-        multiline: false
-      },
-      comments: {
-        multiline: true
-      }
-    }
-  }
-
   onFormChange = (value) => {
-    this.props.formValues = value;
+    this.props.updateFormValues(value);
   }
 
   submit = () => {
@@ -78,7 +59,6 @@ export default class UpdateMedicationModal extends Component<{}> {
     }
     const form = this.refs.form.getValue();
     const medication = Medication.extractFromForm(form);
-
     this.props.saveModal(medication);
   }
 
@@ -95,10 +75,8 @@ export default class UpdateMedicationModal extends Component<{}> {
               <Form ref="form"
                 type={this.Medication}
                 value={this.props.formValues}
-                options={this.formOptions}
+                options={this.props.formOptions}
                 onChange={this.onFormChange} />
-
-              
               <View style={styles.modalFooter}>
                 <Button text='Cancel'
                   style={styles.buttonContainer}
