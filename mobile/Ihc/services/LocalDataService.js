@@ -264,6 +264,19 @@ export function updateMedication(key, update) {
   return false;
 }
 
+export function deleteMedication(key) {
+  const medication = realm.objects('Medication')
+    .filtered('key = "' + key + '"')['0'];
+
+  if (!medication) {
+    throw new Errors('Medication does not exist');
+  }
+
+  realm.write( () => {
+    realm.delete(medication);
+  });
+}
+
 // Returns the medication with the given name, dosage, and units; undefined if none found
 export function getMedication(drugName, dosage, units) {
   const medication = realm.objects('Medication').filtered('drugName = "' + drugName +
@@ -273,13 +286,6 @@ export function getMedication(drugName, dosage, units) {
 
 export function getMedicationWithKey(medicationKey) {
   const medication = realm.objects('Medication').filtered('key = "' + medicationKey + '"');
-  return medication;
-}
-
-// Returns the medication with the given name, dosage, and units; undefined if none found
-export function getMedication(drugName, dosage, units) {
-  const medication = realm.objects('Medication').filtered('drugName = "' + drugName +
-    '" AND dosage = "' + dosage + '" AND units = "' + units + '"');
   return medication;
 }
 

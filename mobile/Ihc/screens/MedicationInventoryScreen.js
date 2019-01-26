@@ -138,6 +138,35 @@ class MedicationInventoryScreen extends Component<{}> {
       });
   }
 
+  deleteMedication = (key) => {
+    try {
+      localData.deleteMedication(key);
+    } catch(e) {
+      this.props.setErrorMessage(e.message);
+      return;
+    }
+    this.props.setLoading(true);
+    this.props.isUploading(true);
+
+    serverData.deleteMedication(key, newMedication)
+      .then( () => {
+        if(this.props.loading) {
+          // if successful, then reload screen (which closes modal too)
+          this.syncAndLoadMedications();
+          this.props.setLoading(false);
+          this.props.setSuccessMessage('Saved successfully');
+        }
+      })
+      .catch( (err) => {
+        if(this.props.loading) {
+          //localData.markMedicationNeedToUpload(key);
+
+          this.props.setLoading(false, true);
+          this.props.setErrorMessage(err.message);
+        }
+      });
+  }
+
   sync = () => {
     this.props.setLoading(true);
     this.props.isUploading(true);
@@ -159,20 +188,18 @@ class MedicationInventoryScreen extends Component<{}> {
       });
   }
 
+
   render() {
     //TODO update rows
     return (
       <Container>
-
-        <View style={styles.header}>
-          <Text style={styles.title}>Medication Inventory</Text>
-        </View>
 
         <ScrollView contentContainerStyle={styles.tableContainer} horizontal>
           <MedicationInventory
             rows={this.state.rows}
             createMedication={this.createMedication}
             updateMedication={this.updateMedication}
+            deleteMedication={this.deleteMedication}
           />
         </ScrollView>
 
@@ -189,25 +216,30 @@ class MedicationInventoryScreen extends Component<{}> {
 }
 
 const styles = StyleSheet.create({
-  header: {
+  headerContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  footer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    bottom: 0,
-  },
-  title: {
-    fontSize: 20,
-    textAlign: 'center',
-  },
+ },
   tableContainer: {
-    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
+  
+  footerContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    height: 40,
+    margin: 4,
+  },
+  
+  text: {
+    textAlign: 'right',
+    width: 180,
+  },
+  
   button: {
-    width: 140,
+    width: 120,
+    height: 60 
   }
 });
 
