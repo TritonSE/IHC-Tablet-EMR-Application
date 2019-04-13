@@ -1,7 +1,6 @@
 //treat these imports as 'containers'
 //to access/modify these containers, look up mongodb functions
 import PatientModel from '../models/Patient';
-import MedicationModel from '../models/Medication';
 
 //function params for all calls are generally the same function(req,res)
 const PatientController = {
@@ -453,79 +452,6 @@ const PatientController = {
         res.json({status: true});
         return;
       });
-    });
-  },
-  /* body: medication object */
-  CreateMedication: function(req, res) {
-    MedicationModel.findOne({drugName: req.body.medication.drugName}, function(err, drug) {
-      if (drug) {
-        err = new Error(`A medication with the name ${req.body.medication.drugName} already exists`);
-      }
-      if (err) {
-        res.json({status: false, error: err.message});
-        return;
-      }
-      MedicationModel.create(req.body.medication, function (err) {
-        if(err) {
-          res.json({status: false, error: err.message});
-          return;
-        }
-        res.json({status: true});
-        return;
-      });
-    });
-  },
-  /* body: NA, returns: array of medication objects */
-  GetMedications: function(req, res) {
-    MedicationModel.find({drugName: req.params.name}, function(err, drugs) {
-      if (drugs.length === 0) {
-        err = new Error(`A medication with the name ${req.params.name} does not exist`);
-      }
-      if(err) {
-        res.json({status: false, error: err.message});
-        return;
-      }
-      res.json({status: true, medications: drugs});
-      return;
-    });
-  },
-  /* body: medication object */
-  UpdateMedication: function(req, res) {
-    MedicationModel.findOne({drugName: req.params.name}, function(err, drug) {
-      if (!drug) {
-        err = new Error(`A medication with the name ${req.params.name} does not exist`);
-      }
-      if (err) {
-        res.json({status: false, error: err.message});
-        return;
-      }
-
-      for (let p in req.body.medication) {
-        drug[p] = req.body.medication[p];
-      }
-
-      //saves it, callback function to handle error
-      drug.save(function(e) {
-        if(e) {
-          res.json({status: false, error: e.message});
-          return;
-        }
-        res.json({status: true});
-        return;
-      });
-    });
-  },
-  DeleteMedication: function(req, res) {
-    MedicationModel.deleteMany({drugName: req.params.name}, function(err, drug) {
-      if(!drug) {
-        err = new Error(`A medication with the name ${req.params.name} does not exist`);
-      }
-      if (err) {
-        res.json({status: false, error: err.message});
-        return;
-      }
-      res.json({status: true});
-      return;
     });
   }
 };

@@ -21,6 +21,12 @@ const realm = new Realm({
   deleteRealmIfMigrationNeeded: true, // TODO: delete when done with dev
 });
 
+export function deleteLocalDatabase() {
+  realm.write(() => {
+    realm.deleteAll();
+  });
+}
+
 export function createPatient(patient) {
   const timestamp = new Date().getTime();
   const patientObjs = realm.objects('Patient').filtered('key = "' + patient.key + '"');
@@ -218,28 +224,73 @@ export function getTriage(patientKey, strDate) {
   return triage;
 }
 
-// Update/Create a medication
-export function updateMedication(update) {
-  const medication = realm.objects('Medication')
-    .filtered('name = "' + update.name + '" AND dosage = "' + update.dosage + '"')['0'];
+// Create a medication
+export function createMedication(medication) {
+  const timestamp = new Date().getTime();
+  // just incase object passed in does not already have key initialized
+  medication.key = Medication.makeKey(medication);
+  const existingMedication = realm.objects('Medication')
+    .filtered('key = "' + medication.key + '"')['0'];
+
+  medication.lastUpdated = timestamp;
+
+  if (existingMedication) {
+    throw new Error('Medication already exists');
+  }
 
   realm.write( () => {
-    //Medication already exists (update)
-    if (medication) {
-      const properties = Object.keys(Medication.schema.properties);
-      properties.forEach( p => {
-        medication[p] = update[p];
-      });
-      return;
-    }
-    //Medication does not exist (create)
-    realm.create('Medication', update);
+    realm.create('Medication', medication);
   });
+}
+
+// Update a medication
+export function updateMedication(key, update) {
+  const existingMedication = realm.objects('Medication')
+    .filtered('key = "' + key + '"')['0'];
+
+  if (!existingMedication) {
+    throw new Error('Medication does not exist');
+  }
+
+  realm.write( () => {
+    const properties = Object.keys(Medication.schema.properties);
+    properties.forEach( p => {
+      if (p !== 'drugName' && p !== 'dosage' && p !== 'units' && p !== 'key') {
+        existingMedication[p] = update[p];
+      }
+    });
+    return existingMedication;
+  });
+}
+
+export function deleteMedication(key) {
+  const medication = realm.objects('Medication')
+    .filtered('key = "' + key + '"')['0'];
+
+  if (!medication) {
+    throw new Error('Medication does not exist');
+  }
+
+  realm.write( () => {
+    realm.delete(medication);
+  });
+}
+
+// Returns the medication with the given name, dosage, and units; undefined if none found
+export function getMedication(drugName, dosage, units) {
+  const medication = realm.objects('Medication').filtered('drugName = "' + drugName +
+    '" AND dosage = "' + dosage + '" AND units = "' + units + '"');
+  return medication;
 }
 
 // Returns an array of all medications with the given name; undefined if none found
 export function getMedications(drugName) {
-  const medications = realm.objects('Medication').filtered('name = "' + drugName + '"');
+  const medications = Object.values(realm.objects('Medication').filtered('drugName = "' + drugName + '"'));
+  return medications;
+}
+
+export function getAllMedications() {
+  const medications = Object.values(realm.objects('Medication'));
   return medications;
 }
 
@@ -273,9 +324,35 @@ export function getPatientsToUpload(all = false) {
   return Object.values(realm.objects('Patient').filtered('needToUpload = true'));
 }
 
-export function lastSynced() {
+export function getMedicationsToUpload(all = false) {
+  if(all) {
+    return Object.values(realm.objects('Medication'));
+  }
+  return Object.values(realm.objects('Medication').filtered('needToUpload = true'));
+}
+
+export function patientsLastSynced() {
   let settings = realm.objects('Settings')['0'];
-  return settings ? settings.lastSynced : 0;
+  if (settings) {
+    if (settings.patientsLastSynced)
+      return settings.patientsLastSynced;
+    else
+      return 0;
+  } else {
+    return 0;
+  }
+}
+
+export function medicationsLastSynced() {
+  let settings = realm.objects('Settings')['0'];
+  if (settings) {
+    if (settings.medicationsLastSynced)
+      return settings.medicationsLastSynced;
+    else
+      return 0;
+  } else {
+    return 0;
+  }
 }
 
 // When updates or creates fail to propogate to the server-side, then mark the
@@ -291,6 +368,17 @@ export function markPatientNeedToUpload(patientKey) {
   });
 }
 
+export function markMedicationNeedToUpload(key) {
+  const medication = realm.objects('Medication').filtered(`key="${key}"`)[0];
+  if(!medication) {
+    throw new Error('Medication does not exist with key ' + key);
+  }
+
+  realm.write(() => {
+    medication.needToUpload = true;
+  });
+}
+
 // After uploading, then these patients don't have to be marked as needing to
 // upload
 export function markPatientsUploaded() {
@@ -300,6 +388,70 @@ export function markPatientsUploaded() {
       patient.needToUpload = false;
     });
   });
+}
+
+export function markMedicationsUploaded() {
+  const medications = Object.values(realm.objects('Medication').filtered('needToUpload = true'));
+  realm.write(() => {
+    medications.forEach(medication => {
+      medication.needToUpload = false;
+    });
+  });
+}
+
+export function handleDownloadedMedications(medications) {
+  const fails = new Set();
+
+  medications.forEach( incomingMedication => {
+    const existingMedication = realm.objects('Medication')
+      .filtered('key = "' + incomingMedication.key + '"')['0'];
+
+    // Medication received does not exist yet
+    if(!existingMedication) {
+      realm.write(() => {
+        realm.create('Medication', incomingMedication);
+      });
+    }
+    else {
+      if (incomingMedication.lastUpdated < existingMedication.lastUpdated) {
+        fails.add(existingMedication.key);
+        throw new Error('Received a medication that is out-of-date. Did you upload updates yet?');
+      }
+
+      // Should not occur but just in case
+      if (incomingMedication.lastUpdated === existingMedication.lastUpdated) {
+        return;
+      }
+
+      // Actually update the medication
+      if (!updateMedication(existingMedication.key, incomingMedication)) {
+        fails.add(existingMedication.key);
+      }
+
+      // Update that medication's updated timestamp
+      realm.write(() => {
+        // If medication finished updating successfully
+        if(!fails.has(incomingMedication.key)) {
+          existingMedication.lastUpdated = incomingMedication.lastUpdated;
+        }
+      });
+    }
+  });
+
+  if(fails.size) {
+    return Array.from(fails);
+  }
+
+  // If finished updating everything successfully, then update synced info
+  const settings = realm.objects('Settings')['0'];
+  realm.write(() => {
+    if(!settings) {
+      realm.create('Settings', {medicationsLastSynced: new Date().getTime(), patientsLastSynced: 0});
+      return;
+    }
+    settings.medicationsLastSynced = new Date().getTime();
+  });
+  return [];
 }
 
 // TODO UPDATE RETURN VAL maybe be object?
@@ -372,10 +524,10 @@ export function handleDownloadedPatients(patients) {
   const settings = realm.objects('Settings')['0'];
   realm.write(() => {
     if(!settings) {
-      realm.create('Settings', {lastSynced: new Date().getTime()});
+      realm.create('Settings', {patientsLastSynced: new Date().getTime(), medicationsLastSynced: 0});
       return;
     }
-    settings.lastSynced = new Date().getTime();
+    settings.patientsLastSynced = new Date().getTime();
   });
   return [];
 }

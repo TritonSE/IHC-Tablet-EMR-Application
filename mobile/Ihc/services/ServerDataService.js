@@ -230,6 +230,23 @@ export function updatePatients(patients) {
   });
 }
 
+export function updateMedications(medications) {
+  return fetch(fetchUrl + '/medications/', {
+    method: 'PUT',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      medications: medications
+    }),
+  }).then(() => {
+    return Promise.resolve(true);
+  }).catch(err => {
+    return Promise.reject(err);
+  });
+}
+
 // Server endpoint: get /patients/:timestamp
 export function getUpdatedPatients(lastSynced) {
   return fetch(fetchUrl + '/patients/' + lastSynced)
@@ -265,6 +282,7 @@ export function createMedication(newMedication) {
       return Promise.reject(err);
     });
 }
+
 // Server endpoint: get /medication-inventory/:name
 export function getMedications(name) {
   return fetch(fetchUrl + '/medication-inventory/' + name)
@@ -279,9 +297,11 @@ export function getMedications(name) {
       return Promise.reject(err);
     });
 }
+
 // Server endpoint: put /medication-inventory/:name/update/:date
-export function updateMedication(name, update) {
-  return fetch(fetchUrl + '/medication-inventory/' + name + '/update', {
+// NOTE: separate update and create medication functions in order to check for pre-existing(create) and non-existing(update)
+export function updateMedication(key, update) {
+  return fetch(fetchUrl + '/medication-inventory/' + key + '/update', {
     method: 'PUT',
     headers: {
       Accept: 'application/json',
@@ -299,9 +319,10 @@ export function updateMedication(name, update) {
       return Promise.reject(err);
     });
 }
+
 // Server endpoint: put /medication-inventory/:name/delete/:date
-export function deleteMedication(name) {
-  return fetch(fetchUrl + '/medication-inventory/' + name + '/delete', {
+export function deleteMedication(key) {
+  return fetch(fetchUrl + '/medication-inventory/' + key + '/delete', {
     method: 'PUT',
     headers: {
       Accept: 'application/json',
@@ -315,6 +336,47 @@ export function deleteMedication(name) {
       return Promise.resolve(true);
     })
     .catch(err => {
+      return Promise.reject(err);
+    });
+}
+
+// Server endpoint: get /medications/:timestamp
+export function getUpdatedMedications(lastSynced) {
+  return fetch(fetchUrl + '/medications/' + lastSynced)
+    .then(response => response.json())
+    .then(json => {
+      if(json.error) {
+        throw new Error(json.error);
+      }
+      const medications = json.medications;
+      return Promise.resolve(medications);
+    }).catch(err => {
+      return Promise.reject(err);
+    });
+}
+
+export function checkCredentials(credentials) {
+  return fetch(fetchUrl + '/credentials/check', {
+    method: 'PUT',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      credentials: credentials
+    })
+  }).then(response => response.json())
+    .then(json => {
+      if(json.error) {
+        throw new Error(json.error);
+      }
+      const status = json.status;
+      if (status) {
+        return Promise.resolve(true);
+      } else {
+        throw new Error('Access Denied');
+      }
+    }).catch(err => {
       return Promise.reject(err);
     });
 }

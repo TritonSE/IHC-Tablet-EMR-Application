@@ -80,6 +80,7 @@ class WelcomeScreen extends Component<{}> {
           this.props.setErrorMessage(err.message);
         }
       });
+
   }
 
   render() {

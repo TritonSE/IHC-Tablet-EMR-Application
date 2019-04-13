@@ -4,76 +4,153 @@ import {
   Text,
   View
 } from 'react-native';
+
 import { Col, Row, Grid } from 'react-native-easy-grid';
 import UpdateMedicationModal from './UpdateMedicationModal';
 import Button from './Button';
-import Medication from '../models/Medication';
+let t = require('tcomb-form-native');
 
 export default class MedicationInventory extends Component<{}> {
   /*
    * Expects in props:
    *  {
    *    rows: [Medication],
-
-   *    saveModal: function
+   *    createMedication: function,
+   *    updateMedication: function,
+   *    deleteMedication: function
    *  }
    */
+
   constructor(props) {
     super(props);
-    this.tableHeaders = ['Drug Name', 'Quantity', 'Dosage', 'Units', 'Notes'];
+    this.tableHeaders = ['Drug Name', 'Quantity', 'Dosage', 'Units', 'Notes', ' ']; //blank header for 'x' column
     this.rowNum = 0;
 
-    // showModal is the modal to update medication
-    // medicationToEdit is the medication that will be edited
-    this.state = {showModal: false, 
-      medicationToEdit: {
-        drugName: '',
-        quantity: 0,
-        dosage: 0,
-        units: '',
-        comments: '' //Consider keeping track of multiple comments (array of strings)
-      }
-    };
+    const formValues = {drugName: null, quantity: null, dosage: null, units: null, comments: null};
+    this.state = { showModal: false, medicationKey: null, formOptions: this.addModalFormOptions, formValues: formValues};
   }
 
+  getStyle(index) {
+    switch(index) {
+      case 0:
+        return styles.drugNameCol;
+      case 1:
+      case 2:
+      case 3:
+        return styles.otherCol;
+      case 4:
+        return styles.notesCol;
+      default:
+        return styles.otherCol;
+    }
+  }
 
-  openEditModal = (medicationToEdit) => {
-    this.setState({medicationToEdit: medicationToEdit, showModal: true});
+  getSize(index) {
+    switch(index) {
+      case 0: // drug name
+        return 3;
+      case 1: // quantity
+      case 2: // dosage
+      case 3: // units
+        return 1;
+      case 4: // notes
+        return 3;
+      default:
+        return 1;
+    }
+  }
+
+  getTextStyle(index) {
+    switch(index) {
+      case 0: // drug name
+        return styles.drugText;
+      case 1: // quantity
+        return styles.otherText;
+      case 2: // dosage
+        return styles.otherText;
+      case 3: // units
+        return styles.otherText;
+      case 4: // notes
+        return styles.notesText;
+      default:
+        return styles.otherText;
+    }
+  }
+
+  addModalFormOptions = {
+    fields: {
+      comments: {
+        multiline: true,
+      },
+    }
+  };
+
+  editModalFormOptions = {
+    fields: {
+      drugName: {
+        editable: false,
+      },
+      dosage: {
+        editable: false,
+      },
+      units: {
+        editable: false, //TODO: units dropdown menu is not disabled
+      },
+      comments: {
+        multiline: true,
+      },
+    }
+  };
+
+  openEditModal = (medication) => {
+    const medicationKey = medication.key;
+    const formValues = this.getFormValuesFromMedication(medication);
+    this.setState({ showModal: true, medicationKey: medicationKey, formOptions: this.editModalFormOptions, formValues: formValues });
   }
 
   openAddModal = () => {
-    this.setState({showModal: true, 
-      medicationToEdit: {
-        drugName: '',
-        quantity: 0,
-        dosage: 0,
-        units: '',
-        comments: '' 
-      }
-    });
+    const formValues = {drugName: null, quantity: null, dosage: null, units: null, comments: null};
+    this.setState({ showModal: true, medicationKey: null, formOptions: this.addModalFormOptions, formValues: formValues });
   }
 
   closeModal = () => {
-    this.setState({showModal: false, 
-      medicationToEdit: {
-        drugName: '',
-        quantity: 0,
-        dosage: 0,
-        units: '',
-        comments: '' 
-      }
-    });
+    this.setState({ showModal: false, formOptions: this.addModalFormOptions });
+  }
+  saveModal = (newMedication) => {
+    if (this.state.medicationKey == null) {
+      this.props.createMedication(newMedication);
+    } else {
+      this.props.updateMedication(this.state.medicationKey, newMedication);
+    }
   }
 
-  updateMedication = (newMedication) => {
-    this.setState({medicationToEdit: newMedication});
+  deleteMedication = (medication) => {
+    const medicationKey = medication.key;
+    this.props.deleteMedication(medicationKey);
+  }
+
+  isEditModal = () => {
+    return this.state.medicationKey !== null;
+  }
+
+  getFormValuesFromMedication(medication) {
+    let drugName = medication.drugName;
+    let quantity = medication.quantity;
+    let dosage = medication.dosage;
+    let units = medication.units;
+    let comments = medication.comments;
+    return {drugName: drugName, quantity: quantity, dosage: dosage, units: units, comments: comments};
+  }
+
+  updateFormValues = (values) => {
+    this.setState({formValues: values});
   }
 
   // Renders each column in a row
   renderCol = (element, keyFn, index) => {
     return (
-      <Col style={styles.otherCol} size={2} key={keyFn(index)}>
-        <Text>{element}</Text>
+      <Col style={this.getStyle(index)} size={this.getSize(index)} key={keyFn(index)}>
+        <Text style={this.getTextStyle(index)}>{element}</Text>
       </Col>
     );
   }
@@ -90,25 +167,28 @@ export default class MedicationInventory extends Component<{}> {
 
   renderRow = (medication, keyFn) => {
     //puts the properties of medication into an array
-    let medData = this.extractMedicationElements(medication);    
+    let medData = this.extractMedicationElements(medication);
 
     // Renders each property
     let cols = medData.map( (e,i) => {
       return this.renderCol(e,keyFn,i);
     });
-    
+
     return (
       // Entire row is clickable to open a modal to edit
       <Row key={`row${this.rowNum++}`} style={styles.rowContainer}
         onPress={() => this.openEditModal(medication)}>
         {cols}
+        <Button style={styles.deleteButton}
+          onPress = {() => this.deleteMedication(medication)}
+          text='x' />
       </Row>
     );
   }
 
   renderHeader(data, keyFn) {
     const cols = data.map( (e,i) => (
-      <Col size={2} style={styles.otherCol} key={keyFn(i)}>
+      <Col size={this.getSize(i)} style={this.getStyle(i)} key={keyFn(i)}>
         <Text style={styles.text}>{e}</Text>
       </Col>
     ));
@@ -124,18 +204,20 @@ export default class MedicationInventory extends Component<{}> {
     // Render row for header, then render all the rows
     return (
       <View style={styles.container}>
-
-        <UpdateMedicationModal
-          showModal={this.state.showModal}
-          closeModal={this.closeModal}
-          saveModal={() => this.props.saveModal(this.state.medicationToEdit)}
-          updateMedication={this.updateMedication}
-          medicationToEdit={this.state.medicationToEdit}
-        />
-
         <Button style={styles.buttonContainer}
           onPress={() => this.openAddModal()}
           text='Add Medication' />
+
+        <UpdateMedicationModal
+          showModal={this.state.showModal}
+          formOptions={this.state.formOptions}
+          formValues={this.state.formValues}
+          closeModal={this.closeModal}
+          saveModal={this.saveModal}
+          isEditModal={this.isEditModal}
+          deleteMedication={this.deleteMedication}
+          updateFormValues={this.updateFormValues}
+        />
 
         <Grid>
           {this.renderHeader(this.tableHeaders, (i) => `header${i}`)}
@@ -151,12 +233,20 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   rowContainer: {
+    borderWidth: 1,
     flex: 1,
     alignSelf: 'stretch',
-    minHeight: 32
+    flexDirection: 'row',
+    justifyContent: 'center'
+  },
+  notesCol: {
+    borderWidth: 1,
   },
   otherCol: {
-    borderWidth: 1
+    borderWidth: 1,
+  },
+  drugNameCol: {
+    borderWidth: 1,
   },
   headerRow: {
     backgroundColor: '#dbdbdb',
@@ -165,11 +255,16 @@ export const styles = StyleSheet.create({
     alignSelf: 'stretch',
     flexDirection: 'row',
   },
-  text: {
+  otherText: {
     textAlign: 'center',
+    width: 70,
   },
   buttonContainer: {
     width: 150,
     height: 40,
+  },
+  deleteButton: {
+    width: 20,
+    height: 20,
   },
 });
