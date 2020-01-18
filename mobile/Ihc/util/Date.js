@@ -28,11 +28,10 @@ export function stringDate(dateObj) {
   // Date appears to be 1 indexed, so don't add 1
   const month = dateObj.getMonth()+1 < 10 ? '0' + (dateObj.getMonth()+1) : dateObj.getMonth()+1;
   const date = dateObj.getDate() < 10 ? '0' + dateObj.getDate() : dateObj.getDate();
-  return `${dateObj.getFullYear()}/${month}/${date}`;
+  return `${dateObj.getFullYear()}${month}${date}`;
 }
 
 export function getYear(strDate) {
-  console.log("Date is ", strDate);
   return parseInt(strDate.slice(0,4));
 }
 

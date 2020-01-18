@@ -15,7 +15,7 @@ const StatusSchema = Schema({
   pharmacyCompleted: Number,
   medicationCheckmarks: [MedicationCheckmarksModel.schema],
   notes: String,
-  lastUpdated: Number, // timestamp
+  lastUpdated: Number // timestamp
 });
 const StatusModel = mongoose.model('Status', StatusSchema);
 module.exports = StatusModel;

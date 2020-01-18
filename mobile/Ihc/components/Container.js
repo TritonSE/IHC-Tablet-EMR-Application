@@ -127,10 +127,17 @@ class Container extends Component<{}> {
 
 const styles = StyleSheet.create({
   buttonContainer: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
   },
   outside: {
+    flex: 1,
+    backgroundColor: '#F5FCFF',
   },
   container: {
+    flex: 0,
+    padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },

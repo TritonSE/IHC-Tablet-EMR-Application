@@ -14,7 +14,7 @@ export default class Triage {
       return MaleTriageLabs;
     }
     if(gender === 1 && !form.labsDone) { // male
-      return MaleTriage1;
+      return MaleTriage;
     }
 
     if(gender === 2 && form.labsDone) { // Female
@@ -28,13 +28,7 @@ export default class Triage {
   }
 
   static extractFromForm(form, patientKey, labTestObjects) {
-    let intVals = ['height', 'weight', 'rr', 'temp', 'o2', 'hr'];
     const triage = Object.assign({}, form);
-    intVals.forEach( obj => {
-      if(typeof(triage[obj]) != "number"){
-        triage[obj] = Number(triage[obj]);
-      }
-    });
     triage.patientKey = patientKey;
     triage.lastUpdated = new Date().getTime();
 
@@ -118,8 +112,8 @@ Triage.schema = {
     triager: 'string', // Name of triager
     status: 'string', // EMT, Student, Nurse, Other
     statusClarification: 'string?', // If Other status, explain
-    height: 'double',
     weight: 'double',
+    height: 'double',
     temp: 'double',
     rr: 'double',
     o2: 'double',
@@ -180,7 +174,7 @@ MaleTriage = t.struct({
   date: t.String,
   hasInsurance: t.Boolean,
   location: Locations,
-  arrivalTime: t.maybe(t.Number), // should match checkin time from Status
+  arrivalTime: t.maybe(t.Number), // should match checkin time from Status 
   timeIn: t.String,
   timeOut: t.String,
   triager: t.String, // Name of triager
@@ -200,11 +194,6 @@ MaleTriage = t.struct({
   immunizations: t.String,
   chiefComplaint: t.String,
   pharmacySection: t.String,
-});
-
-MaleTriage1 = t.struct({
-  date: t.String,
-  hasInsurance: t.Boolean,
 });
 
 FemaleTriage = MaleTriage.extend({

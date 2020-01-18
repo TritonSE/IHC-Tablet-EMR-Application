@@ -1,17 +1,18 @@
 import { Navigation } from 'react-native-navigation';
 
+import WelcomeScreen from './WelcomeScreen';
 import SigninScreen from './SigninScreen';
-import TriagePageNew from './TriagePageNew';
+import PatientSelectScreen from './PatientSelectScreen';
+import PatientHomeScreen from './PatientHomeScreen';
 import MedicationScreen from './MedicationScreen';
 import MedicationUpdateScreen from './MedicationUpdateScreen';
 import GrowthChartScreen from './GrowthChartScreen';
 import SoapScreen from './SoapScreen';
 import TriageScreen from './TriageScreen';
-import TriageHistory from './TriageHistory';
+import PatientHistoryScreen from './PatientHistoryScreen';
 import TestServerScreen from './TestServerScreen';
 import MedicationInventoryScreen from './MedicationInventoryScreen';
 import LoginScreen from './LoginScreen';
-
 import newPatientList from './newPatientList.js';
 import newPatientCheckIn from './newPatientCheckIn';
 
@@ -19,7 +20,6 @@ import newPatientCheckIn from './newPatientCheckIn';
 // register all screens of the app (including internal ones)
 // store and Provider are pieces of Redux
 export function registerScreens(store, Provider) {
-
   // All ID names should be Ihc.<Component Name>
   Navigation.registerComponent('Ihc.WelcomeScreen', () => WelcomeScreen, store, Provider);
   Navigation.registerComponent('Ihc.SigninScreen', () => SigninScreen, store, Provider);

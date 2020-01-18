@@ -52,7 +52,7 @@ export function createPatient(patient) {
 // Check that patient exists locally, and if so then create a status object for them
 // Returns the new StatusObj created
 export function signinPatient(patientForm) {
-  const key = patientForm.key;
+  const key = Patient.makeKey(patientForm);
   const patientObjs = realm.objects('Patient').filtered('key = "' + key + '"');
   const patient = patientObjs['0'];
 
@@ -375,11 +375,6 @@ export function getPatient(patientKey) {
     throw new Error('Patient does not exist');
   }
   return patient['0'];
-}
-
-export function getPatients(lastUpdated) {
-  const patients = realm.objects('Patient').filtered('lastUpdated > $0', lastUpdated);
-  return patients;
 }
 
 export function getMedicationUpdates(patientKey) {
