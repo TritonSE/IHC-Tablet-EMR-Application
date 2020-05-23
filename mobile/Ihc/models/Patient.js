@@ -88,6 +88,7 @@ export default class Patient {
     patient.key = Patient.makeKey(patient);
     patient.needToUpload = false;
     patient.lastUpdated = new Date().getTime();
+    patient.checkedIn = true;
 
     patient.gender = form.gender in Gender ? Gender[form.gender] : Gender[Undefined];
 
@@ -129,6 +130,7 @@ Patient.schema = {
     triages: 'Triage[]',
     statuses: 'Status[]',
     lastUpdated: 'int', // timestamp
-    needToUpload: 'bool?'
+    needToUpload: 'bool?',
+    checkedIn: 'bool'
   }
 };
