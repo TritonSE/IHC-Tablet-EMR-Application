@@ -4,6 +4,7 @@ import PatientController from './controllers/Patient';
 import MedicationController from './controllers/MedicationController';
 import ApplicationController from './controllers/ApplicationController';
 import LabQueueController from './controllers/LabQueueController';
+import MedicationRequestController from './controllers/MedicationRequestController';
 
 
 const router = express.Router();
@@ -121,5 +122,15 @@ router.get('/lab-queue/:lastUpdated', LabQueueController.GetUpdatedLabRequests);
 // receive LabRequests from the tablet and save them to the server, or update the
 // existing server-side objects if they already exist
 router.put('/lab-queue/update', LabQueueController.UpdateLabRequests);
+
+// Add medication request to queue
+router.post('/medication-request/add', MedicationRequestController.AddToQueue);
+
+// Remove medication request to queue
+router.put('/medication-request/remove', MedicationRequestController.RemoveFromQueue);
+
+// returns an array of LabRequests that have been updated since the lastUpdated
+// timestamp. If all LabRequests are wanted, then pass a timestamp of 0
+router.get('/medication-request/:lastUpdated', MedicationRequestController.GetUpdatedMedRequests);
 
 module.exports = router;

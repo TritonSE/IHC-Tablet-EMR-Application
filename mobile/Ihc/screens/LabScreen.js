@@ -404,14 +404,14 @@ class LabScreen extends Component<{}> {
                       text='Submit' />
                   </View>: null
                 }
-            <View>
+          <View style={{display:"flex", flexDirection: "row"}}>
               {
                 this.props.doctorView ? 
                 // Request test buttons
                 tests.map((test, i) => {
                   return(
                     <Button onPress={() => this.requestLabTest(test)}
-                      style={{marginVertical: 20,}}
+                      style={{marginVertical: 20, width: (100/ tests.length) + "%"}}
                       text= {`Request ${test} lab test`}
                       key={i} />
                   );
@@ -528,4 +528,3 @@ const mapDispatchToProps = dispatch => ({
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(LabScreen);
-

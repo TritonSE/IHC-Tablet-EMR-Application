@@ -12,10 +12,10 @@ import {
 import { DataTable, Searchbar } from 'react-native-paper';
 import Button from '../components/Button';
 import Patient from '../models/Patient';
-import { downloadLabRequests } from '../util/Sync';
 import { localData, serverData } from '../services/DataService';
 import Container from '../components/Container';
 import { stringDate } from '../util/Date';
+import { downloadMedRequests } from '../util/Sync';
 
 class MedicationRequestScreen extends Component {
 
@@ -41,31 +41,35 @@ class MedicationRequestScreen extends Component {
     console.log(medRequests);
     this.setState({ medRequests: medRequests });
 
-    //downloadLabRequests()
-    //.then((failedPatientKeys) => {
-    //// View README: Handle syncing the tablet, point 3 for explanation
-    //console.log("within downstream Sync");
-    //if (this.props.loading) {
-    //if (failedPatientKeys.length > 0) {
-    //throw new Error(`${failedPatientKeys.length} lab requests didn't properly sync.`);
-    //}
-    //let newStatuses = localData.getStatuses(today);
-    //newStatuses = newStatuses.filter(obj => !(obj.soapCompleted && obj.triageCompleted));
-    //this.setState({ fullarr: newStatuses, arrQ: newStatuses });
-    //this.props.setLoading(false);
-    //}
-    //})
-    //.catch(err => {
-    //console.log('failure');
-    //if (this.props.loading) {
-    //this.props.setLoading(false);
-    //this.props.setErrorMessage(err.message);
-    //}
-    //})
-    //.finally(() => {
-    //this.setState({ isFetching: false });
-    //});
-
+    //serverData.getUpdatedMedRequests(
+    downloadMedRequests()
+    .then((failedPatientKeys) => {
+      // View README: Handle syncing the tablet, point 3 for explanation
+      console.log("within downstream Sync");
+      if (this.props.loading) {
+        if (failedPatientKeys.length > 0) {
+          throw new Error(`${failedPatientKeys.length} lab requests didn't properly sync.`);
+        }
+        let newStatuses = localData.getStatuses(today);
+        newStatuses = newStatuses.filter(obj => !(obj.soapCompleted && obj.triageCompleted));
+        this.setState({ fullarr: newStatuses, arrQ: newStatuses });
+        this.props.setLoading(false);
+      }
+    })
+      .catch(err => {
+        console.log('failure');
+        if (this.props.loading) {
+          this.props.setLoading(false);
+          this.props.setErrorMessage(err.message);
+        }
+      })
+      .finally(() => {
+        const medRequests = localData.getMedicationRequests();
+        console.log("med requests:");
+        console.log(medRequests);
+        this.setState({ medRequests: medRequests });
+        this.setState({ isFetching: false });
+      });
   }
 
   onNavigatorEvent(event) {
@@ -99,14 +103,15 @@ class MedicationRequestScreen extends Component {
 
   deleteRequest = (item) => {
     Alert.alert('Confirm Delete Request', 
-      `Are you sure you want to cancel the ${item.testType} 
+      `Are you sure you want to cancel the medication request
             test for ${Patient.fullName(localData.getPatient(item.patientKey))}?`,
       [
         {
           text: 'Yes', 
           onPress: () => {
+            serverData.dequeueLabRequest(item);
             localData.dequeueMedicationRequest(item.key);
-            //this.syncAndLoadLabRequests();
+            this.syncAndLoadMedRequests();
           }
         }, 
         {

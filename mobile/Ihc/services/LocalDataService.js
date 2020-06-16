@@ -584,6 +584,18 @@ export function labRequestsLastSynced() {
   }
 }
 
+export function medRequestsLastSynced() {
+  let settings = realm.objects('Settings')['0'];
+  if (settings) {
+    if (settings.medRequestsLastSynced)
+      return settings.medRequestsLastSynced;
+    else
+      return 0;
+  } else {
+    return 0;
+  }
+}
+
 // When updates or creates fail to propogate to the server-side, then mark the
 // patient so they can be uploaded in the future
 export function markPatientNeedToUpload(patientKey) {
@@ -646,6 +658,37 @@ export function markLabRequestsUploaded() {
       labRequest.needToUpload = false;
     });
   });
+}
+
+export function handleDownloadedMedRequests(medRequests) {
+  const fails = new Set();
+
+  medRequests.forEach( incomingMedRequest => {
+    const existingMedRequest = realm.objects('MedicationRequest')
+      .filtered('key = "' + incomingMedRequest.key + '"')['0'];
+
+    // Medrequest received does not exist yet
+    if (!existingMedRequest) {
+      realm.write(() => {
+        realm.create('MedicationRequest', existingMedRequest);
+      });
+    }
+  });
+
+  if(fails.size) {
+    return Array.from(fails);
+  }
+
+  // If finished updating everything successfully, then update synced info
+  const settings = realm.objects('Settings')['0'];
+  realm.write(() => {
+    if(!settings) {
+      realm.create('Settings', {labRequestsLastSynced: new Date().getTime(), patientsLastSynced: 0, medicationsLastSynced: 0});
+      return;
+    }
+    settings.labRequestsLastSynced = new Date().getTime();
+  });
+  return [];
 }
 
 export function handleDownloadedLabRequests(labRequests) {

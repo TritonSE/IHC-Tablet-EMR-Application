@@ -94,12 +94,12 @@ class SoapScreen extends Component<{}> {
     // medication fillout screen.
     //const medication = localData.getMedicationRequest(this.props.currentPatientKey);
     //if(medication) {
-      //console.log("med: " + medication.medicationRequested);
-      //console.log("key: " + this.props.currentPatientKey);
+    //console.log("med: " + medication.medicationRequested);
+    //console.log("key: " + this.props.currentPatientKey);
     //}
 
     //if(medication && medication != null && medication.medicationRequested) {
-      //this.setState({requestedMedication: medication.medicationRequested.map(m => {return {key: m}})});
+    //this.setState({requestedMedication: medication.medicationRequested.map(m => {return {key: m}})});
     //}
 
     // Attempt server download and reload information if successful
@@ -162,11 +162,17 @@ class SoapScreen extends Component<{}> {
       });
   }
 
-  submit = () => {
+  submitMedicationRequest = () => {
     const meds = this.state.requestedMedication.map(medication => medication.key);
     console.log("key: " + this.props.currentPatientKey);
     const medicationRequest = MedicationRequest.newMedicationRequest(this.props.currentPatientKey, meds);
+    serverData.enqueueMedicationRequest(medicationRequest);
     localData.enqueueMedicationRequest(medicationRequest);
+    this.props.setLoading(true);
+    setTimeout(() => this.props.setLoading(false), 5);
+  }
+
+  submit = () => {
     //validations 
     if(!this.refs.form.validate().isValid()) {
       this.props.setErrorMessage('Form not correct. Review form.');
@@ -217,78 +223,85 @@ class SoapScreen extends Component<{}> {
 
   addMedication = () => {
     var list = Object.assign([], this.state.requestedMedication);
-    list.push({key: this.state.selectedMedication});
-    this.setState({requestedMedication: list});
+    if(this.state.selectedMedication != blank && 
+      list.filter(item => item.key == this.state.selectedMedication).length == 0) {
+      list.push({key: this.state.selectedMedication});
+      this.setState({requestedMedication: list});
+    }
   }
 
   MedicationSelection = () => {
     return (
-      <View>
-        <Text style={styles.title}>
-          Select Medication: 
-        </Text>
-        <View style={{display: "flex", alignItems: "center", flexDirection: "row"}}>
-          <Text
-            style={styles.label} 
-          >
-            Category:
+        <View>
+          <Text style={styles.subtitle}>
+            Request Medication
           </Text>
-          <Text
-            style={styles.label} 
-          >
-            Medication:
-          </Text>
-        </View>
-        <View style={{display: "flex", alignItems: "center", flexDirection: "row"}}>
-          <Picker 
-            selectedValue={this.state.selectedCategory}
-            style={{ height: 50, width: "50%", }} 
-            onValueChange={(itemValue, itemIndex) => this.setState({selectedCategory: itemValue})}
-          >
-            <Picker.Item label={blank} value={blank}/>
-            {
-              Object.getOwnPropertyNames(Medication.categories).map(entry => 
-                <Picker.Item label={entry} value={entry} key={entry}/>
-              )
-            }
-          </Picker>
+          <View style={{display: "flex", alignItems: "center", flexDirection: "row"}}>
+            <Text
+              style={styles.label} 
+            >
+              Category:
+            </Text>
+            <Text
+              style={styles.label} 
+            >
+              Medication:
+            </Text>
+          </View>
+          <View style={{display: "flex", alignItems: "center", flexDirection: "row"}}>
+            <Picker 
+              selectedValue={this.state.selectedCategory}
+              style={{ height: 50, width: "50%", }} 
+              onValueChange={(itemValue, itemIndex) => this.setState({selectedCategory: itemValue})}
+            >
+              <Picker.Item label={blank} value={blank}/>
+              {
+                Object.getOwnPropertyNames(Medication.categories).map(entry => 
+                  <Picker.Item label={entry} value={entry} key={entry}/>
+                )
+              }
+            </Picker>
 
-          <Picker 
-            selectedValue={this.state.selectedMedication}
-            style={{ height: 50, width: "50%" }} 
-            onValueChange={(itemValue, itemIndex) => this.setState({selectedMedication: itemValue})}
-          >
-            {
-              this.state.selectedCategory == blank ? <Picker.Item label={blank} value={blank}/>
-              : Medication.categories[this.state.selectedCategory].map(entry => 
+            <Picker 
+              selectedValue={this.state.selectedMedication}
+              style={{ height: 50, width: "50%" }} 
+              onValueChange={(itemValue, itemIndex) => this.setState({selectedMedication: itemValue})}
+            >
+              {
+                this.state.selectedCategory == blank ? <Picker.Item label={blank} value={blank}/>
+                : Medication.categories[this.state.selectedCategory].map(entry => 
                 <Picker.Item label={entry} value={entry} key={entry}/>
-              )
-            }
-          </Picker>
+                )
+              }
+            </Picker>
+          </View>
+          <Text
+            style={styles.label} 
+          >
+            Requested Medication: 
+          </Text>
+          <FlatList
+            data= {this.state.requestedMedication}
+            extraData={this.props}
+            renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}
+          />
+          <Button onPress={this.addMedication}
+            text='Add medication' />
+          <Button onPress={this.submitMedicationRequest}
+            text='Submit Medication Request' />
         </View>
-        <Text
-          style={styles.label} 
-        >
-          Requested Medication: 
-        </Text>
-        <FlatList
-          data= {this.state.requestedMedication}
-          extraData={this.props}
-          renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}
-        />
-        <Button onPress={this.addMedication}
-          text='Add medication' />
-      </View>
     );
   }
 
   render() {
     return (
       <Container>
-        <Text style={styles.title}>
-          Soap
-        </Text>
 
+        <View style={{width:'80%'}}>
+          <Text style={styles.subtitle}>
+            Soap
+          </Text>
+        </View>
         <View style={styles.form}>
           <Form ref="form"
             type={this.Soap}
@@ -296,19 +309,16 @@ class SoapScreen extends Component<{}> {
             options={this.formOptions}
             onChange={this.onFormChange}
           />
-          <this.MedicationSelection/>
-
-          <Button onPress={this.completed}
-            text='SOAP completed' />
 
           <Button onPress={this.submit}
-            text="Update" />
+            text="Submit SOAP" />
+          <this.MedicationSelection/>
 
+          <MedicationHistory
+            patientKey={this.props.currentPatientKey}
+          />
         </View>
 
-        <MedicationHistory
-          patientKey={this.props.currentPatientKey}
-        />
       </Container>
     );
   }
@@ -327,6 +337,17 @@ const styles = StyleSheet.create({
     fontSize: 20,
     height: 50,
     width: "50%"
+  }, 
+  subtitle: {
+    fontSize: 20,
+    textAlign: 'left',
+    margin: 2,
+    color:'#0055FF'
+  },
+  item: {
+    textAlign: 'center',
+    fontSize: 15,
+    height:30
   }
 });
 

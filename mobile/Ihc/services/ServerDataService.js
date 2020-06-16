@@ -397,6 +397,63 @@ export function checkCredentials(credentials) {
 }
 
 //TODO: addCredentials() put /credentials/add
+export function enqueueMedicationRequest(medRequest) {
+  return fetch(fetchUrl + '/medication-request/add', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      medRequest: medRequest
+    })
+  }).then(response => response.json())
+    .then(json => {
+      if(json.error) {
+        throw new Error(json.error);
+      }
+      return Promise.resolve(true);
+    }).catch(err => {
+      return Promise.reject(err);
+    });
+}
+
+// Server endpoint: put /lab-queue/remove
+export function dequeueMedicationRequest(medRequest) {
+  return fetch(fetchUrl + '/medication-request/remove', {
+    method: 'PUT',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      medRequest: medRequest
+    })
+  }).then(response => response.json())
+    .then(json => {
+      if(json.error) {
+        throw new Error(json.error);
+      }
+      return Promise.resolve(true);
+    }).catch(err => {
+      return Promise.reject(err);
+    });
+}
+
+// Server endpoint: get /lab-queue/:timestamp
+export function getUpdatedMedRequests(lastSynced) {
+  return fetch(fetchUrl + '/medication-request/' + lastSynced)
+    .then(response => response.json())
+    .then(json => {
+      if(json.error) {
+        throw new Error(json.error);
+      }
+      const medRequests = json.medRequests;
+      return Promise.resolve(medRequests);
+    }).catch(err => {
+      return Promise.reject(err);
+    });
+}
 
 // Server endpoint: put /lab-queue/add
 export function enqueueLabRequest(labRequest) {

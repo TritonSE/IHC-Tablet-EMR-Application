@@ -32,3 +32,13 @@ export function downloadLabRequests() {
       return {failedLabRequests : failedLabRequestKeys};
     });
 }
+
+export function downloadMedRequests() {
+  const lastSynced = localData.medRequestsLastSynced();
+
+  return serverData.getUpdatedMedRequests(lastSynced)
+    .then((medRequests) => {
+      const failedMedRequestKeys = localData.handleDownloadedMedRequests(medRequests);
+      return {failedMedRequestKeys : failedMedRequestKeys};
+    });
+}

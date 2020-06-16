@@ -41,31 +41,25 @@ class LabRequestScreen extends Component {
         console.log(labRequests);
         this.setState({ labRequests: labRequests });
 
-        //downloadLabRequests()
-            //.then((failedPatientKeys) => {
-                //// View README: Handle syncing the tablet, point 3 for explanation
-                //console.log("within downstream Sync");
-                //if (this.props.loading) {
-                    //if (failedPatientKeys.length > 0) {
-                        //throw new Error(`${failedPatientKeys.length} lab requests didn't properly sync.`);
-                    //}
-                    //let newStatuses = localData.getStatuses(today);
-                    //newStatuses = newStatuses.filter(obj => !(obj.soapCompleted && obj.triageCompleted));
-                    //this.setState({ fullarr: newStatuses, arrQ: newStatuses });
-                    //this.props.setLoading(false);
-                //}
-            //})
-            //.catch(err => {
-                //console.log('failure');
-                //if (this.props.loading) {
-                    //this.props.setLoading(false);
-                    //this.props.setErrorMessage(err.message);
-                //}
-            //})
-            //.finally(() => {
-                //this.setState({ isFetching: false });
-            //});
-
+        downloadLabRequests()
+            .then((downloadedRequests) => {
+                // View README: Handle syncing the tablet, point 3 for explanation
+                console.log("within downstream Sync");
+                if (this.props.loading) {
+                    this.setState({labRequests: this.state.labRequests.concat(downloadedRequests)});
+                    this.props.setLoading(false);
+                }
+            })
+            .catch(err => {
+              console.log('failure: ' + err);
+                if (this.props.loading) {
+                    this.props.setLoading(false);
+                    this.props.setErrorMessage(err.message);
+                }
+            })
+            .finally(() => {
+                this.setState({ isFetching: false });
+            });
     }
 
     onNavigatorEvent(event) {
