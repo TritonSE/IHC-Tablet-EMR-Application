@@ -7,6 +7,14 @@ stubbing)
 
 Keystore password: ihcapp
 
+## Local Environment Setup
+
+## Building APK
+
+## Installing APK
+
+# Dev Docs/ Old Readme
+
 Shortcuts:
 
 * [Command line](#command-line)
