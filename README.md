@@ -20,7 +20,7 @@ Once that is done, please open up the "Terminal" application and type in the fol
 After you have typed this phrase, you need to press [ENTER] at the end.
 
 ```
-sh ihc-emr/scripts/setup.sh
+curl -sL https://raw.githubusercontent.com/TritonSE/ihc-emr/master/scripts/setup.sh | bash -s
 ```
 
 You should see output being displayed. If any of the output indicates an error has occurred, please 
