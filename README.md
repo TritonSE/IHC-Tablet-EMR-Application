@@ -2,20 +2,48 @@
 
 ---
 
-## For Clients
+## Clients
 
 The client section assumes that the user will be running the server on a Raspberry Pi Model 3+
-and the application on an Android tablet. An APK file will be posted through the Releases section
-on GitHub with the server IP address already pre-configured during the build process.
+and the application on an Android tablet. An APK file will be posted in GitHub releases
+with the server IP address already having been pre-configured during the build process.
 
-TODO
+### Server Setup
+
+To start, you will need to be running a 32-bit Raspbian OS on a Raspberry Pi Model 3+. If you do
+not have Raspbian, please using the [official imager](https://www.raspberrypi.org/software/) to flash a fresh version on to your
+RPI's SD card. Note that the server runs fine on any version of Linux, but this guide was written
+assuming you are using the above specfications. Additionally, please make sure that your
+username on the RPI is **pi**.
+
+Once that is done, please open up the "Terminal" application and type in the following commands.
+The start of a new command is denoted by a newline and indicates that you should press [ENTER] there.
+
+```
+sudo apt update
+sudo apt upgrade
+sudo apt install cron git mongodb nodejs npm screen
+sudo systemctl enable mongodb
+sudo systemctl start mongodb
+git clone https://github.com/TritonSE/ihc-emr
+sh ihc-emr/scripts/setup.sh
+```
+
+Between typing out each command and pressing [ENTER], you should see output being displayed. If any
+of the commands indicates with errors being displayed, please contact us for further help. Otherwise,
+at this point, the server will be running indefinitely on the Raspberry Pi.
+
+### Android App Setup
+
+Please visit the [releases section](https://github.com/TritonSE/ihc-emr/releases) and download the
+latest version of the APK to your tablet. Everything should work out of the box.
 
 ---
 
-## For Developers
+## Developers
 
-The developers section assumes that the user will be running the app on an Android tablet emulator,
-and the server is hosted on a local MongoDB instance.
+The developers section assumes that the user will be running the app on an Android tablet emulator
+and hosting the server on a local MongoDB instance.
 
 ### Local Environment Setup
 
