@@ -16,22 +16,16 @@ RPI's SD card. Note that the server runs fine on any version of Linux, but this 
 assuming you are using the above specfications. Additionally, please make sure that your
 username on the RPI is **pi**.
 
-Once that is done, please open up the "Terminal" application and type in the following commands.
-The start of a new command is denoted by a newline and indicates that you should press [ENTER] there.
+Once that is done, please open up the "Terminal" application and type in the following command.
+After you have typed this phrase, you need to press [ENTER] at the end.
 
 ```
-sudo apt update
-sudo apt upgrade
-sudo apt install cron git mongodb nodejs npm screen
-sudo systemctl enable mongodb
-sudo systemctl start mongodb
-git clone https://github.com/TritonSE/ihc-emr
 sh ihc-emr/scripts/setup.sh
 ```
 
-Between typing out each command and pressing [ENTER], you should see output being displayed. If any
-of the commands indicates with errors being displayed, please contact us for further help. Otherwise,
-at this point, the server will be running indefinitely on the Raspberry Pi.
+You should see output being displayed. If any of the output indicates an error has occurred, please 
+contact us for further help. Otherwise, at this point, the server will be running indefinitely on the
+Raspberry Pi.
 
 ### Android App Setup
 
