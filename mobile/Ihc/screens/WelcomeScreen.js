@@ -154,7 +154,11 @@ class newWelcomeScreen extends Component {
                   <MenuItem itemImage = { require('../images/WelcomeScreen/Pharmacy.png') }
                   />
                 </TouchableOpacity >
-
+                 <TouchableOpacity onPress = { () => this.goToScreen("Ihc.SettingsScreen", "Settings") }
+                 style = { styles.menuSettings } >
+                    <MenuItem itemImage = { require('../images/WelcomeScreen/Settings.jpg') }
+                  />
+                 </TouchableOpacity>
               </View>
             </Container >
         );
@@ -173,8 +177,12 @@ const styles = StyleSheet.create({
         marginLeft: '10%'
     },
     TouchableOpacityStyle: {
-        height: '50%',
+        height: '38%',
         width: '50%',
+    },
+    menuSettings: {
+        height: '15%',
+        width: '100%',
     },
 });
 

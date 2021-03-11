@@ -16,6 +16,7 @@ import PatientHomeScreen from './PatientHomeScreen';
 import LabRequestScreen from './LabRequestScreen';
 import MedicationRequestScreen from './MedicationRequestScreen';
 import MedicationFilloutScreen from './MedicationFilloutScreen';
+import SettingsScreen from './SettingsScreen';
 
 import PatientList from './PatientList.js';
 import PatientCheckIn from './PatientCheckIn.js';
@@ -47,4 +48,5 @@ export function registerScreens(store, Provider) {
   Navigation.registerComponent('Ihc.LabFilloutScreen', () => LabFilloutScreen, store, Provider);
   Navigation.registerComponent('Ihc.MedicationRequestScreen', () => MedicationRequestScreen, store, Provider);
   Navigation.registerComponent('Ihc.MedicationFilloutScreen', () => MedicationFilloutScreen, store, Provider);
+  Navigation.registerComponent('Ihc.SettingsScreen', () => SettingsScreen, store, Provider);
 }

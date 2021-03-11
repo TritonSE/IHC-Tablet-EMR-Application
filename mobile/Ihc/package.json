@@ -17,6 +17,7 @@
         "check": "npm run test && npm run lint"
     },
     "dependencies": {
+        "@react-native-async-storage/async-storage": "^1.14.1",
         "@react-navigation/bottom-tabs": "^5.1.0",
         "ansi-regex": "^4.1.0",
         "gradle": "^1.0.9",
