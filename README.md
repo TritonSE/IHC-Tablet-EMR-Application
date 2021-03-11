@@ -37,7 +37,8 @@ latest version of the APK to your tablet. Everything should work out of the box.
 ## Developers
 
 The developers section assumes that the user will be running the app on an Android tablet emulator
-and hosting the server on a local MongoDB instance.
+and hosting the server on a local MongoDB instance. You must also be using **NodeJS v10.2** or lower
+due to issues with Realm.
 
 ### Local Environment Setup
 

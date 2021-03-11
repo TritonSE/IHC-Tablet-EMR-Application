@@ -40,7 +40,7 @@
         "react-native-vector-icons": "^6.6.0",
         "react-native-wheel-picker": "^1.2.0",
         "react-redux": "^5.0.7",
-        "realm": "^2.3.3",
+        "realm": "^2.29.2",
         "redux": "^4.0.0",
         "tcomb-form-native": "^0.6.11"
     },
