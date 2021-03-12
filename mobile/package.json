@@ -1,5 +1,5 @@
 {
-    "name": "IHC EMR",
+    "name": "ihc-emr-mobile",
     "version": "0.0.2",
     "private": true,
     "babel": {
