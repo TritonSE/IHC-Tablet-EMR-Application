@@ -1,14 +1,13 @@
 // This file should handle all the fetch() calls to the Express server
 // Requires Promises because dealing with server requests
 
-import config from '../config.json';
 import {convertPatientForServer, convertStatusForServer} from '../util/Realm';
-// Must set the fetchUrl to the server's IP Address and Port
-const fetchUrl = config.fetchUrl;
 
+import SyncStorage from 'sync-storage';
 
 // Server endpoint: post /patient
 export function createPatient(patient) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/patient', {
     method: 'POST',
     headers: {
@@ -34,6 +33,7 @@ export function createPatient(patient) {
 
 // Server endpoint: put /patient/:key/status/:date
 export function updateStatus(statusObj) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   const copy = convertStatusForServer(statusObj);
   return fetch(fetchUrl + `/patient/${statusObj.patientKey}/status/${statusObj.date}`, {
     method: 'PUT',
@@ -60,6 +60,7 @@ export function updateStatus(statusObj) {
 
 // Server endpoint: put /patient/:key/drugUpdate/:date
 export function updateDrugUpdate(update) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + `/patient/${update.patientKey}/drugUpdate/${update.date}`, {
     method: 'PUT',
     headers: {
@@ -83,6 +84,7 @@ export function updateDrugUpdate(update) {
 
 // Server endpoint: get /patient/:key/drugUpdates
 export function getDrugUpdates(patientKey) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/patient/' + patientKey + '/drugUpdates')
     .then(response => response.json())
     .then(json => {
@@ -98,6 +100,7 @@ export function getDrugUpdates(patientKey) {
 
 // Server endpoint: put /patient/:key/soap/:date
 export function updateSoap(update) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   //update is the new soap object
   return fetch(fetchUrl + `/patient/${update.patientKey}/soap/${update.date}`, {
     method: 'PUT',
@@ -124,6 +127,7 @@ export function updateSoap(update) {
 // Server endpoint: get /patient/:key/soap/:date
 // Returns SOAP object if it exists, or undefined if not
 export function getSoap(patientKey, strDate) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/patient/' + patientKey +'/soap/' + strDate)
     .then(response => response.json())
     .then(json => {
@@ -140,6 +144,7 @@ export function getSoap(patientKey, strDate) {
 
 // Server endpoint: put /patient/:key/triage/:date
 export function updateTriage(update) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + `/patient/${update.patientKey}/triage/${update.date}`, {
     method: 'PUT',
     headers: {
@@ -165,6 +170,7 @@ export function updateTriage(update) {
 // Server endpoint: get /patient/:key/triage/:date
 // Returns Triage object if it exists, or undefined if not
 export function getTriage(patientKey, strDate) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/patient/' + patientKey + '/triage/' + strDate)
     .then(response => response.json())
     .then(json => {
@@ -181,6 +187,7 @@ export function getTriage(patientKey, strDate) {
 
 // Server endpoint: get /patient/:key
 export function getPatient(patientKey) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/patient/' + patientKey)
     .then(response => response.json())
     .then(json => {
@@ -194,7 +201,8 @@ export function getPatient(patientKey) {
     });
 }
 
-export function getPatients(){
+export function getPatients() {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/patients/0')
     .then(response => response.json())
     .then(obj => {
@@ -211,6 +219,7 @@ export function getPatients(){
 // Server endpoint: get /patients/statuses/:date
 // Return the statuses of the patients that are for this date
 export function getStatuses(strDate) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/patients/statuses/' + strDate)
     .then(response => response.json())
     .then(json => {
@@ -227,6 +236,7 @@ export function getStatuses(strDate) {
 // Server endpoint: post /patients
 export function updatePatients(patients) {
   const patientsCopy = patients.map( patient => convertPatientForServer(patient) );
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/patients/', {
     method: 'PUT',
     headers: {
@@ -244,6 +254,7 @@ export function updatePatients(patients) {
 }
 
 export function updateMedications(medications) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/medications/', {
     method: 'PUT',
     headers: {
@@ -262,6 +273,7 @@ export function updateMedications(medications) {
 
 // Server endpoint: get /patients/:timestamp
 export function getUpdatedPatients(lastSynced) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/patients/' + lastSynced)
     .then(response => response.json())
     .then(json => {
@@ -278,6 +290,7 @@ export function getUpdatedPatients(lastSynced) {
 
 // Server endpoint: post /medication-inventory
 export function createMedication(newMedication) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/medication-inventory', {
     method: 'POST',
     headers: {
@@ -299,6 +312,7 @@ export function createMedication(newMedication) {
 
 // Server endpoint: get /medication-inventory/:name
 export function getMedications(name) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/medication-inventory/' + name)
     .then(response => response.json())
     .then(json => {
@@ -315,6 +329,7 @@ export function getMedications(name) {
 // Server endpoint: put /medication-inventory/:name/update/:date
 // NOTE: separate update and create medication functions in order to check for pre-existing(create) and non-existing(update)
 export function updateMedication(key, update) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/medication-inventory/' + key + '/update', {
     method: 'PUT',
     headers: {
@@ -336,6 +351,7 @@ export function updateMedication(key, update) {
 
 // Server endpoint: put /medication-inventory/:name/delete/:date
 export function deleteMedication(key) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/medication-inventory/' + key + '/delete', {
     method: 'PUT',
     headers: {
@@ -356,6 +372,7 @@ export function deleteMedication(key) {
 
 // Server endpoint: get /medications/:timestamp
 export function getUpdatedMedications(lastSynced) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/medications/' + lastSynced)
     .then(response => response.json())
     .then(json => {
@@ -371,6 +388,7 @@ export function getUpdatedMedications(lastSynced) {
 
 // Server endpoint: put /credentials/check
 export function checkCredentials(credentials) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/credentials/check', {
     method: 'PUT',
     headers: {
@@ -398,6 +416,7 @@ export function checkCredentials(credentials) {
 
 //TODO: addCredentials() put /credentials/add
 export function enqueueMedicationRequest(medRequest) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/medication-request/add', {
     method: 'POST',
     headers: {
@@ -420,6 +439,7 @@ export function enqueueMedicationRequest(medRequest) {
 
 // Server endpoint: put /lab-queue/remove
 export function dequeueMedicationRequest(medRequest) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/medication-request/remove', {
     method: 'PUT',
     headers: {
@@ -442,6 +462,7 @@ export function dequeueMedicationRequest(medRequest) {
 
 // Server endpoint: get /lab-queue/:timestamp
 export function getUpdatedMedRequests(lastSynced) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/medication-request/' + lastSynced)
     .then(response => response.json())
     .then(json => {
@@ -457,6 +478,7 @@ export function getUpdatedMedRequests(lastSynced) {
 
 // Server endpoint: put /lab-queue/add
 export function enqueueLabRequest(labRequest) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/lab-queue/add', {
     method: 'POST',
     headers: {
@@ -479,6 +501,7 @@ export function enqueueLabRequest(labRequest) {
 
 // Server endpoint: put /lab-queue/remove
 export function dequeueLabRequest(labRequest) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/lab-queue/remove', {
     method: 'PUT',
     headers: {
@@ -501,6 +524,7 @@ export function dequeueLabRequest(labRequest) {
 
 // Server endpoint: put /lab-queue/complete
 export function markLabRequestComplete(key) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/lab-queue/' + key + 'complete', {
     method: 'PUT',
     headers: {
@@ -522,6 +546,7 @@ export function markLabRequestComplete(key) {
 
 // Server endpoint: put /lab-queue/incomplete
 export function markLabRequestIncomplete(key) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/lab-queue/' + key + 'incomplete', {
     method: 'PUT',
     headers: {
@@ -543,6 +568,7 @@ export function markLabRequestIncomplete(key) {
 
 // Server endpoint: put /lab-queue/clear
 export function clearLabQueue() {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/lab-queue/clear', {
     method: 'PUT',
     headers: {
@@ -564,6 +590,7 @@ export function clearLabQueue() {
 
 // Server endpoint: get /lab-queue/:timestamp
 export function getUpdatedLabRequests(lastSynced) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/lab-queue/' + lastSynced)
     .then(response => response.json())
     .then(json => {
@@ -578,6 +605,7 @@ export function getUpdatedLabRequests(lastSynced) {
 }
 
 export function updateLabRequests(labRequests) {
+  const fetchUrl = SyncStorage.get('@ihc:fetchUrl');
   return fetch(fetchUrl + '/lab-queue/update', {
     method: 'PUT',
     headers: {

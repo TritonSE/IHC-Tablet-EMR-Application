@@ -1,7 +1,7 @@
 {
-  "name": "server",
-  "version": "0.0.1",
-  "description": "local server implementation for EMR",
+  "name": "IHC EMR Server",
+  "version": "0.0.2",
+  "description": "Local server implementation for EMR",
   "main": "build/init.js",
   "dependencies": {
     "babel-polyfill": "^6.26.0",
