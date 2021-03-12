@@ -43,8 +43,8 @@ due to issues with Realm.
 ### Local Environment Setup
 
 1. Make sure you have NodeJS v10 and jdk 1.8 (JAVA 8) installed. Run ```npm install -g react-native-cli``` in your terminal.
-2. In terminal, go to your preferred directory for the project to be located at and run  ```git clone <repo url>```.
-3. In the directories `ihc/mobile` and `ihc/server`, run ```npm install```.
+2. In terminal, go to your preferred directory for the project to be located at and run  ```git clone https://github.com/TritonSE/ihc-emr```.
+3. In the directories `mobile` and `server`, run ```npm install```.
 4. Install MongoDB.
 5. (Recommended) Open the project through Android Studio.
 6. Set environment variable `ANDROID_HOME` to the location of Android SDK on computer. Set environment variable `JAVA_HOME` to the location of jdk 1.8(JAVA 8) on computer.
@@ -53,8 +53,8 @@ due to issues with Realm.
 
 1. In Android Studio, press the AVD Manager button on the top right. Create a new virtual device, a 10 inch tablet and run the emulator.
 2. Make sure MongoDB is running. [Link to Instructions](https://medium.com/swlh/get-up-and-running-with-mongodb-in-under-5-minutes-abc8770b1ef8)
-3. In directory `ihc/server`, run ```npm start``` to run the server.
-4. In directory `ihc/mobile`, run ```react-native run-android``` to start the application on the emulator.
+3. In directory `server`, run ```npm start``` to run the server.
+4. In directory `mobile`, run ```react-native run-android``` to start the application on the emulator.
 
 ### Building an APK
 
@@ -82,4 +82,4 @@ due to issues with Realm.
 2. Download the APK to the device(either using Google Drive or another method).
 3. If a pop-up comes up saying "This type of file can harm your device," accept it.
 4. Tap the downloaded APK file and tap `Install`.
-5. The app should now show up in the app library as `ihc`.
+5. The app should now show up in the app library as `IHC EMR`.
