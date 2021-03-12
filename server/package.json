@@ -1,6 +1,6 @@
 {
   "name": "ihc-emr-server",
-  "version": "0.0.3",
+  "version": "0.0.2",
   "description": "Local server implementation for EMR",
   "main": "build/init.js",
   "dependencies": {
