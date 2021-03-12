@@ -6,6 +6,7 @@ import com.reactnativenavigation.NavigationApplication;
 import com.zyu.ReactNativeWheelPickerPackage;
 import java.util.Arrays;
 import java.util.List;
+import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
 
 public class MainApplication extends NavigationApplication {
 
@@ -20,7 +21,7 @@ public class MainApplication extends NavigationApplication {
      // No need to add RnnPackage and MainReactPackage
      return Arrays.<ReactPackage>asList(
         // eg. new VectorIconsPackage()
-        new RealmReactPackage(), new ReactNativeWheelPickerPackage()
+        new RealmReactPackage(), new ReactNativeWheelPickerPackage(), new AsyncStoragePackage()
      );
   }
 

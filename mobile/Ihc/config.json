@@ -2,5 +2,5 @@
   "fakeLocalDataService": "false",
   "fakeServerDataService": "false",
   "testingServerDataService": "false",
-  "fetchUrl": "http://10.0.2.2:8000"
+  "fetchUrl": "http://10.0.2.210.0:8000"
 }

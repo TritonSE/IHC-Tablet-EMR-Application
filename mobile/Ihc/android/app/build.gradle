@@ -99,7 +99,7 @@ android {
 
     defaultConfig {
         applicationId "com.ihc"
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -165,6 +165,7 @@ dependencies {
     compile ("com.facebook.react:react-native:0.53.3") { force = true }  // From node_modules
     compile "com.facebook.react:react-native:+"  // From node_modules
     compile project(':react-native-navigation')
+    compile project(':@react-native-community_async-storage')
 }
 
 // Run this once to be able to run the application with BUCK
